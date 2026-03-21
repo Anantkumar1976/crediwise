@@ -1,0 +1,9 @@
+-- DEPRECATED — superseded by `document_stage_rules.sql`
+-- ---------------------------------------------------------------------------
+-- That file adds `document_stage_rules`, seeds transitions (including
+-- Processing → Approved), and replaces `admin_update_application_status` with
+-- rules-driven `assert_documents_for_transition`.
+--
+-- If you only ran this older script before, run `document_stage_rules.sql` once
+-- in the Supabase SQL Editor to migrate forward (idempotent table create + seed
+-- uses ON CONFLICT DO NOTHING).

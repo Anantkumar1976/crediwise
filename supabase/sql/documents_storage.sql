@@ -1,0 +1,224 @@
+-- CrediWise: documents bucket + RLS + optional `documents` table
+-- Run in Supabase SQL Editor (Dashboard → SQL → New query)
+
+begin;
+
+-- Private bucket for loan documents
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', false)
+on conflict (id) do nothing;
+
+-- Path convention: {application_id}/{uuid}_{filename}
+-- First path segment must match an application the user owns (customer) or any app (staff read).
+
+drop policy if exists "documents_select" on storage.objects;
+create policy "documents_select"
+on storage.objects
+for select
+to authenticated
+using (
+  bucket_id = 'documents'
+  and (
+    exists (
+      select 1
+      from public.applications a
+      where a.id = split_part(name, '/', 1)::uuid
+        and a.customer_id = auth.uid()
+    )
+    or exists (
+      select 1
+      from public.profiles p
+      where p.id = auth.uid()
+        and p.role in ('advisor', 'operations_executive', 'super_admin')
+    )
+  )
+);
+
+drop policy if exists "documents_insert_customer" on storage.objects;
+create policy "documents_insert_customer"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'documents'
+  and exists (
+    select 1
+    from public.applications a
+    where a.id = split_part(name, '/', 1)::uuid
+      and a.customer_id = auth.uid()
+  )
+);
+
+drop policy if exists "documents_delete_customer" on storage.objects;
+create policy "documents_delete_customer"
+on storage.objects
+for delete
+to authenticated
+using (
+  bucket_id = 'documents'
+  and exists (
+    select 1
+    from public.applications a
+    where a.id = split_part(name, '/', 1)::uuid
+      and a.customer_id = auth.uid()
+  )
+);
+
+-- Optional: table metadata (skip if you already created `documents` with same columns)
+create table if not exists public.documents (
+  id uuid primary key default gen_random_uuid(),
+  application_id uuid not null references public.applications(id) on delete cascade,
+  uploaded_by uuid not null references auth.users(id) on delete restrict,
+  document_type text not null,
+  file_name text,
+  mime_type text,
+  file_size_bytes bigint,
+  storage_bucket text not null default 'documents',
+  storage_path text not null,
+  status text not null default 'Uploaded'
+    check (status in ('Uploaded', 'Under Review', 'Approved', 'Re-upload')),
+  version int not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_documents_application_id on public.documents(application_id);
+
+-- Keep updated_at fresh on row changes (optional if you already have a global trigger)
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_documents_updated_at on public.documents;
+create trigger trg_documents_updated_at
+before update on public.documents
+for each row execute function public.set_updated_at();
+
+alter table public.documents enable row level security;
+
+drop policy if exists "documents_row_select" on public.documents;
+create policy "documents_row_select"
+on public.documents
+for select
+to authenticated
+using (
+  exists (
+    select 1
+    from public.applications a
+    where a.id = documents.application_id
+      and (
+        a.customer_id = auth.uid()
+        or exists (
+          select 1
+          from public.profiles p
+          where p.id = auth.uid()
+            and p.role in ('advisor', 'operations_executive', 'super_admin')
+        )
+      )
+  )
+);
+
+drop policy if exists "documents_row_insert_customer" on public.documents;
+create policy "documents_row_insert_customer"
+on public.documents
+for insert
+to authenticated
+with check (
+  uploaded_by = auth.uid()
+  and exists (
+    select 1
+    from public.applications a
+    where a.id = application_id
+      and a.customer_id = auth.uid()
+  )
+);
+
+drop policy if exists "documents_row_update_staff" on public.documents;
+create policy "documents_row_update_staff"
+on public.documents
+for update
+to authenticated
+using (
+  exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role in ('advisor', 'operations_executive', 'super_admin')
+  )
+)
+with check (true);
+
+drop policy if exists "documents_row_update_customer_reupload" on public.documents;
+create policy "documents_row_update_customer_reupload"
+on public.documents
+for update
+to authenticated
+using (
+  uploaded_by = auth.uid()
+  and status in ('Uploaded', 'Re-upload')
+  and exists (
+    select 1
+    from public.applications a
+    where a.id = documents.application_id
+      and a.customer_id = auth.uid()
+  )
+)
+with check (
+  uploaded_by = auth.uid()
+  and status in ('Uploaded', 'Under Review', 'Approved', 'Re-upload')
+);
+
+create or replace function public.register_customer_document(
+  p_application_id uuid,
+  p_document_type text,
+  p_file_name text,
+  p_mime_type text,
+  p_file_size_bytes bigint,
+  p_storage_path text,
+  p_storage_bucket text default 'documents'
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_new_id uuid;
+begin
+  if v_uid is null then
+    raise exception 'Not authenticated';
+  end if;
+  if p_storage_bucket is distinct from 'documents' then
+    raise exception 'Invalid storage bucket';
+  end if;
+  if split_part(p_storage_path, '/', 1) is distinct from p_application_id::text then
+    raise exception 'Storage path must start with application id';
+  end if;
+  if not exists (
+    select 1 from public.applications a
+    where a.id = p_application_id and a.customer_id = v_uid
+  ) then
+    raise exception 'Application not found or access denied';
+  end if;
+  insert into public.documents (
+    application_id, uploaded_by, document_type, file_name, mime_type,
+    file_size_bytes, storage_bucket, storage_path, status
+  ) values (
+    p_application_id, v_uid, p_document_type, p_file_name, p_mime_type,
+    p_file_size_bytes, p_storage_bucket, p_storage_path, 'Uploaded'
+  ) returning id into v_new_id;
+  return v_new_id;
+end;
+$$;
+
+revoke all on function public.register_customer_document(uuid, text, text, text, bigint, text, text) from public;
+grant execute on function public.register_customer_document(uuid, text, text, text, bigint, text, text) to authenticated;
+
+commit;

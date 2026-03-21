@@ -1,0 +1,8 @@
+# Supabase CLI — https://supabase.com/docs/guides/cli
+# Replace project_id with your project ref when linking: `supabase link --project-ref <ref>`
+
+project_id = "your-project-ref"
+
+[functions.notify-email]
+# Database Webhooks call this function with a shared secret header (see docs/email-notifications.md).
+verify_jwt = false
