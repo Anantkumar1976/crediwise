@@ -28,8 +28,9 @@ export default async function MyProfilePage(props: {
     .eq("id", user.id)
     .maybeSingle();
 
-  const profileSchemaBroken =
-    profileError && isMissingColumnOrSchemaCacheError(profileError.message);
+  const profileSchemaBroken = Boolean(
+    profileError && isMissingColumnOrSchemaCacheError(profileError.message),
+  );
 
   const complete = profileSchemaBroken
     ? false
