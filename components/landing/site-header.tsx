@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { BrandLogo } from "@/components/landing/brand-logo";
 
 const SECTION_LINKS = [
   { href: "#about", label: "About" },
@@ -36,12 +37,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
         <Link
           href="/"
-          className="shrink-0 text-lg font-bold tracking-tight text-slate-900 transition hover:text-sky-800"
+          className="shrink-0 rounded-md transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
+          aria-label="CrediWise home"
         >
-          CrediWise
+          <BrandLogo preload heightPx={56} />
         </Link>
 
         <nav
@@ -97,12 +99,12 @@ export function SiteHeader() {
       {open ? (
         <div
           id="mobile-nav"
-          className="fixed inset-0 top-16 z-40 bg-slate-950/40 lg:hidden"
+          className="fixed inset-0 top-[4.5rem] z-40 bg-slate-950/40 lg:hidden"
           onClick={close}
           aria-hidden
         >
           <div
-            className="ml-auto flex h-[calc(100vh-4rem)] w-full max-w-sm flex-col border-l border-slate-200 bg-white p-4 shadow-xl"
+            className="ml-auto flex h-[calc(100vh-4.5rem)] w-full max-w-sm flex-col border-l border-slate-200 bg-white p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <nav className="flex flex-col gap-1" aria-label="Mobile">

@@ -2,7 +2,9 @@
 
 import { Suspense, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { BrandLogo } from "@/components/landing/brand-logo";
 
 function SignInContent() {
   const router = useRouter();
@@ -44,8 +46,10 @@ function SignInContent() {
   return (
     <main className="mx-auto max-w-md px-6 py-10 sm:px-8">
       <header>
-        <p className="text-xl font-bold tracking-tight">CrediWise</p>
-        <p className="mt-1 text-sm text-slate-600">Sign in to continue</p>
+        <Link href="/" aria-label="CrediWise home" className="inline-block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]">
+          <BrandLogo heightPx={40} />
+        </Link>
+        <p className="mt-3 text-sm text-slate-600">Sign in to continue</p>
       </header>
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
