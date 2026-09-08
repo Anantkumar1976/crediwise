@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { formatDashboardDateTime } from "@/lib/i18n/format";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { appStatusLabel, docStatusLabel, docTypeLabel, loanTypeLabel } from "@/lib/i18n/labels";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface DocumentRow {
@@ -18,6 +22,9 @@ interface ApplicationMeta {
 }
 
 export default async function MyDocumentsPage() {
+  const locale = await getRequestLocale();
+  const t = getDictionary(locale);
+  const d = t.dashboard;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -59,23 +66,19 @@ export default async function MyDocumentsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">My Documents</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          All files uploaded across your applications, newest first.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{d.documentsPage.title}</h1>
+        <p className="mt-1 text-sm text-slate-600">{d.documentsPage.subtitle}</p>
       </div>
 
       {documents.length === 0 ? (
         <section className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">No documents uploaded yet</p>
-          <p className="mt-2 text-sm text-slate-600">
-            Open an application and upload from the documents section.
-          </p>
+          <p className="text-sm font-medium text-slate-700">{d.documentsPage.emptyTitle}</p>
+          <p className="mt-2 text-sm text-slate-600">{d.documentsPage.emptyBody}</p>
           <Link
             href="/dashboard/applications"
             className="mt-6 inline-flex rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            Go to applications
+            {d.documentsPage.goApplications}
           </Link>
         </section>
       ) : (
@@ -84,53 +87,55 @@ export default async function MyDocumentsPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Document
+                  {d.documentsPage.colDocument}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Application
+                  {d.documentsPage.colApplication}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
+                  {d.documentsPage.colStatus}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Uploaded
+                  {d.documentsPage.colUploaded}
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Open
+                  {d.documentsPage.colOpen}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {documents.map((d) => {
-                const app = appById.get(d.application_id);
+              {documents.map((doc) => {
+                const app = appById.get(doc.application_id);
                 return (
-                  <tr key={d.id}>
+                  <tr key={doc.id}>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-900">{d.document_type}</p>
-                      {d.file_name ? (
-                        <p className="text-xs text-slate-500">{d.file_name}</p>
+                      <p className="font-medium text-slate-900">{docTypeLabel(t, doc.document_type)}</p>
+                      {doc.file_name ? (
+                        <p className="text-xs text-slate-500">{doc.file_name}</p>
                       ) : null}
-                      <p className="text-xs text-slate-400">v{d.version}</p>
+                      <p className="text-xs text-slate-400">v{doc.version}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-700">
-                      <span className="capitalize">{app?.loan_type ?? "—"}</span>
+                      <span>{app ? loanTypeLabel(t, app.loan_type) : "—"}</span>
                       <span className="text-slate-400"> · </span>
-                      <span className="text-slate-600">{app?.current_status ?? "—"}</span>
+                      <span className="text-slate-600">
+                        {app ? appStatusLabel(t, app.current_status) : "—"}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-800">
-                        {d.status}
+                        {docStatusLabel(t, doc.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-600">
-                      {new Date(d.created_at).toLocaleString()}
+                      {formatDashboardDateTime(doc.created_at, locale)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/dashboard/applications/${d.application_id}`}
+                        href={`/dashboard/applications/${doc.application_id}`}
                         className="font-semibold text-sky-800 hover:underline"
                       >
-                        View
+                        {d.common.view}
                       </Link>
                     </td>
                   </tr>

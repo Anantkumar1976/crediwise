@@ -3,9 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useI18n } from "@/components/i18n/locale-provider";
+import { formatMessage } from "@/lib/i18n/format";
+import type { HeroSlideId } from "@/lib/i18n/dictionaries";
 
 interface HeroSlide {
-  id: string;
+  id: HeroSlideId;
   src: string;
   alt: string;
   headline: string;
@@ -15,48 +18,26 @@ interface HeroSlide {
   ctaAriaLabel: string;
 }
 
-const SLIDES: HeroSlide[] = [
+const SLIDE_META = [
   {
-    id: "journey",
+    id: "journey" as const,
     src: "/images/crediwise/crediwise-financial-journey-banner.png",
-    alt: "A young professional reviews options on a phone at a laptop, with a compare-apply-track path illustrated beside him.",
-    headline: "Your Financial Journey Made Simple",
-    description: "Compare. Apply. Track. All in one place.",
-    ctaLabel: "Get Started",
     ctaHref: "/auth/sign-up",
-    ctaAriaLabel: "Get started with CrediWise",
   },
   {
-    id: "home",
+    id: "home" as const,
     src: "/images/crediwise/crediwise-home-loan-banner.png",
-    alt: "A smiling Indian family sitting together in a sunlit living room after moving into a new home.",
-    headline: "Home Loans for a Brighter Future",
-    description:
-      "Compare top lenders, get the best rates, and make your dream home a reality.",
-    ctaLabel: "Explore Home Loans",
     ctaHref: "/auth/sign-up",
-    ctaAriaLabel: "Explore home loans and create an account",
   },
   {
-    id: "car",
+    id: "car" as const,
     src: "/images/crediwise/crediwise-car-loan-banner.png",
-    alt: "A confident young man leaning on a car against a bright city skyline.",
-    headline: "Car Loans That Move You Forward",
-    description: "Compare offers, get better rates, and hit the road with confidence.",
-    ctaLabel: "Explore Car Loans",
     ctaHref: "/auth/sign-up",
-    ctaAriaLabel: "Explore car loans and create an account",
   },
   {
-    id: "personal",
+    id: "personal" as const,
     src: "/images/crediwise/crediwise-personal-loan-banner.png",
-    alt: "A smiling young woman holding a laptop outdoors, with icons for education, healthcare, travel, and shopping.",
-    headline: "Personal Loans for Life’s Possibilities",
-    description:
-      "For education, healthcare, travel, weddings and more. Find the right loan, right now.",
-    ctaLabel: "Explore Personal Loans",
     ctaHref: "/auth/sign-up",
-    ctaAriaLabel: "Explore personal loans and create an account",
   },
 ];
 
@@ -114,6 +95,7 @@ function ArrowIcon({ direction }: { direction: "prev" | "next" }) {
 
 export function HeroSlider() {
   const headingId = useId();
+  const { t } = useI18n();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -129,7 +111,7 @@ export function HeroSlider() {
   }, []);
 
   const goTo = useCallback((nextIndex: number, fromUser = false) => {
-    const count = SLIDES.length;
+    const count = SLIDE_META.length;
     setIndex(((nextIndex % count) + count) % count);
     if (fromUser) {
       interactionEpoch.current += 1;
@@ -150,7 +132,7 @@ export function HeroSlider() {
     const epoch = interactionEpoch.current;
     const timer = window.setTimeout(() => {
       if (interactionEpoch.current !== epoch) return;
-      setIndex((current) => (current + 1) % SLIDES.length);
+      setIndex((current) => (current + 1) % SLIDE_META.length);
     }, AUTOPLAY_MS);
     return () => window.clearTimeout(timer);
   }, [index, paused, reduceMotion]);
@@ -179,14 +161,18 @@ export function HeroSlider() {
     }
   };
 
-  const active = SLIDES[index];
+  const slides: HeroSlide[] = SLIDE_META.map((meta) => ({
+    ...meta,
+    ...t.hero.slides[meta.id],
+  }));
+  const active = slides[index];
 
   return (
     <section
       id="about"
       className="relative scroll-mt-24 overflow-x-clip bg-white"
       aria-roledescription="carousel"
-      aria-label="CrediWise loan highlights"
+      aria-label={t.hero.carouselLabel}
       onKeyDown={onKeyDown}
     >
       <div
@@ -203,7 +189,7 @@ export function HeroSlider() {
         onTouchEnd={onTouchEnd}
       >
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 md:aspect-[247/100]">
-          {SLIDES.map((slide, slideIndex) => {
+          {slides.map((slide, slideIndex) => {
             const isActive = slideIndex === index;
             return (
               <div
@@ -238,7 +224,7 @@ export function HeroSlider() {
               type="button"
               onClick={() => goPrev(true)}
               className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/70 text-[#0A2540] shadow-sm backdrop-blur-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-              aria-label="Previous slide"
+              aria-label={t.hero.previousSlide}
             >
               <ArrowIcon direction="prev" />
             </button>
@@ -246,7 +232,7 @@ export function HeroSlider() {
               type="button"
               onClick={() => goNext(true)}
               className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/70 text-[#0A2540] shadow-sm backdrop-blur-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-              aria-label="Next slide"
+              aria-label={t.hero.nextSlide}
             >
               <ArrowIcon direction="next" />
             </button>
@@ -256,9 +242,9 @@ export function HeroSlider() {
             <div
               className="flex items-center gap-2 rounded-full bg-white/70 px-2.5 py-1.5 shadow-sm backdrop-blur-sm"
               role="tablist"
-              aria-label="Choose slide"
+              aria-label={t.hero.chooseSlide}
             >
-              {SLIDES.map((slide, slideIndex) => {
+              {slides.map((slide, slideIndex) => {
                 const selected = slideIndex === index;
                 return (
                   <button
@@ -266,7 +252,10 @@ export function HeroSlider() {
                     type="button"
                     role="tab"
                     aria-selected={selected}
-                    aria-label={`Show slide ${slideIndex + 1}: ${slide.headline}`}
+                    aria-label={formatMessage(t.hero.showSlide, {
+                      n: slideIndex + 1,
+                      headline: slide.headline,
+                    })}
                     onClick={() => goTo(slideIndex, true)}
                     className={`h-2.5 rounded-full transition ${
                       selected ? "w-7 bg-[#00A88E]" : "w-2.5 bg-[#0A2540]/25 hover:bg-[#0A2540]/45"
@@ -285,12 +274,12 @@ export function HeroSlider() {
               type="button"
               onClick={() => goPrev(true)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[#0A2540] transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-              aria-label="Previous slide"
+              aria-label={t.hero.previousSlide}
             >
               <ArrowIcon direction="prev" />
             </button>
-            <div className="flex items-center gap-2" role="tablist" aria-label="Choose slide">
-              {SLIDES.map((slide, slideIndex) => {
+            <div className="flex items-center gap-2" role="tablist" aria-label={t.hero.chooseSlide}>
+              {slides.map((slide, slideIndex) => {
                 const selected = slideIndex === index;
                 return (
                   <button
@@ -298,7 +287,10 @@ export function HeroSlider() {
                     type="button"
                     role="tab"
                     aria-selected={selected}
-                    aria-label={`Show slide ${slideIndex + 1}: ${slide.headline}`}
+                    aria-label={formatMessage(t.hero.showSlide, {
+                      n: slideIndex + 1,
+                      headline: slide.headline,
+                    })}
                     onClick={() => goTo(slideIndex, true)}
                     className={`h-2.5 rounded-full transition ${
                       selected ? "w-7 bg-[#00A88E]" : "w-2.5 bg-[#0A2540]/25"
@@ -311,7 +303,7 @@ export function HeroSlider() {
               type="button"
               onClick={() => goNext(true)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[#0A2540] transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-              aria-label="Next slide"
+              aria-label={t.hero.nextSlide}
             >
               <ArrowIcon direction="next" />
             </button>
@@ -320,7 +312,11 @@ export function HeroSlider() {
       </div>
 
       <p className="sr-only" aria-live="polite">
-        Slide {index + 1} of {SLIDES.length}: {active.headline}
+        {formatMessage(t.hero.liveSlide, {
+          n: index + 1,
+          total: slides.length,
+          headline: active.headline,
+        })}
       </p>
     </section>
   );

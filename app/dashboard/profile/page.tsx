@@ -6,10 +6,17 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { missingCustomerProfileItems, isCustomerProfileComplete } from "@/lib/profile/completion";
 import { updateCustomerProfile } from "@/app/dashboard/profile-actions";
 import { signOutAction } from "@/app/dashboard/actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { formatMessage } from "@/lib/i18n/format";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { missingFieldLabels } from "@/lib/i18n/labels";
 
 export default async function MyProfilePage(props: {
   searchParams?: Promise<{ required?: string }>;
 }) {
+  const locale = await getRequestLocale();
+  const t = getDictionary(locale);
+  const d = t.dashboard;
   const searchParams = (await props.searchParams) ?? {};
   const showRequired = searchParams.required === "1";
 
@@ -36,7 +43,7 @@ export default async function MyProfilePage(props: {
     ? false
     : isCustomerProfileComplete(profile, user.email);
   const missing = profileSchemaBroken
-    ? ["Database setup required (see below)"]
+    ? []
     : missingCustomerProfileItems(profile, user.email);
 
   const defaultEmail = profile?.email?.trim() || user.email?.trim() || "";
@@ -45,11 +52,8 @@ export default async function MyProfilePage(props: {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">My Profile</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Keep your contact details up to date. A complete profile is required before you can start a loan
-          application.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{d.profile.title}</h1>
+        <p className="mt-1 text-sm text-slate-600">{d.profile.subtitle}</p>
       </div>
 
       {profileSchemaBroken ? (
@@ -57,7 +61,7 @@ export default async function MyProfilePage(props: {
           className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-950"
           role="alert"
         >
-          <p className="font-semibold">Database setup required</p>
+          <p className="font-semibold">{d.profile.schemaTitle}</p>
           <p className="mt-1 text-rose-900">{PROFILE_COLUMNS_SETUP_MESSAGE}</p>
         </div>
       ) : null}
@@ -67,26 +71,26 @@ export default async function MyProfilePage(props: {
           className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
           role="alert"
         >
-          <p className="font-semibold">Complete your profile first</p>
+          <p className="font-semibold">{d.profile.requiredTitle}</p>
           <p className="mt-1 text-amber-900">
-            Please fill in: {missing.join(", ")}. Then you can create or submit loan applications.
+            {formatMessage(d.profile.requiredBody, { items: missingFieldLabels(t, missing) })}
           </p>
         </div>
       ) : null}
 
       {!profileSchemaBroken && complete ? (
         <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900">
-          Profile complete — you can apply for loans
+          {d.profile.completeBadge}
         </span>
       ) : null}
       {!profileSchemaBroken && !complete ? (
         <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-          Profile incomplete — finish the form below to apply
+          {d.profile.incompleteBadge}
         </span>
       ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Contact details</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{d.profile.contactDetails}</h2>
         <form action={updateCustomerProfile} className="mt-6 space-y-4">
           <fieldset
             disabled={profileSchemaBroken}
@@ -94,7 +98,7 @@ export default async function MyProfilePage(props: {
           >
             <div className="space-y-2">
             <label htmlFor="fullName" className="text-sm font-medium text-slate-800">
-              Full name <span className="text-rose-600">*</span>
+              {d.common.fields.fullName} <span className="text-rose-600">*</span>
             </label>
             <input
               id="fullName"
@@ -110,7 +114,7 @@ export default async function MyProfilePage(props: {
 
             <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-slate-800">
-              Email <span className="text-rose-600">*</span>
+              {d.common.fields.email} <span className="text-rose-600">*</span>
             </label>
             <input
               id="email"
@@ -125,19 +129,18 @@ export default async function MyProfilePage(props: {
             />
             {user.email ? (
               <p className="text-xs text-slate-500">
-                Your sign-in email is <strong>{user.email}</strong>. You can store a contact email here
-                too; at least one is required.
+                {formatMessage(d.profile.signInEmail, { email: user.email })}
               </p>
             ) : (
               <p className="text-xs text-slate-500">
-                No email on your account yet — enter a contact email so we can reach you.
+                {d.profile.noAccountEmail}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
             <label htmlFor="phone" className="text-sm font-medium text-slate-800">
-              Phone <span className="text-rose-600">*</span>
+              {d.common.fields.phone} <span className="text-rose-600">*</span>
             </label>
             <input
               id="phone"
@@ -154,7 +157,7 @@ export default async function MyProfilePage(props: {
 
           <div className="space-y-2">
             <label htmlFor="altPhone" className="text-sm font-medium text-slate-800">
-              Alt phone
+              {d.profile.altPhone}
             </label>
             <input
               id="altPhone"
@@ -165,12 +168,12 @@ export default async function MyProfilePage(props: {
               autoComplete="tel"
               className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none ring-slate-900/10 focus:ring-2"
             />
-            <p className="text-xs text-slate-500">Optional secondary number.</p>
+            <p className="text-xs text-slate-500">{d.profile.altPhoneHint}</p>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="address" className="text-sm font-medium text-slate-800">
-              Address <span className="text-rose-600">*</span>
+              {d.common.fields.address} <span className="text-rose-600">*</span>
             </label>
             <textarea
               id="address"
@@ -189,37 +192,35 @@ export default async function MyProfilePage(props: {
             type="submit"
             className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Save profile
+            {d.profile.save}
           </button>
           </fieldset>
         </form>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Account</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{d.profile.account}</h2>
         <dl className="mt-4 space-y-4">
           <div>
-            <dt className="text-xs font-medium text-slate-500">User ID</dt>
+            <dt className="text-xs font-medium text-slate-500">{d.profile.userId}</dt>
             <dd className="mt-1 font-mono text-xs text-slate-700 break-all">{user.id}</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-slate-500">Role</dt>
+            <dt className="text-xs font-medium text-slate-500">{d.profile.role}</dt>
             <dd className="mt-1 text-sm text-slate-900 capitalize">{profile?.role ?? "customer"}</dd>
           </div>
         </dl>
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Session</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Sign out on this device when you&apos;re done, especially on a shared computer.
-        </p>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{d.profile.session}</h2>
+        <p className="mt-2 text-sm text-slate-600">{d.profile.sessionBody}</p>
         <form action={signOutAction} className="mt-4">
           <button
             type="submit"
             className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
           >
-            Sign out
+            {d.nav.signOut}
           </button>
         </form>
       </section>

@@ -12,11 +12,14 @@ export function emiStatusLabel(value: string) {
   return found?.label ?? value;
 }
 
-export function formatMoneyInr(amount: number | null | undefined) {
+export function formatMoneyInr(
+  amount: number | null | undefined,
+  localeTag = "en-IN",
+) {
   if (amount === null || amount === undefined || Number.isNaN(amount)) {
     return "—";
   }
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat(localeTag, {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 2,

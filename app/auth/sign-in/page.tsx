@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { BrandLogo } from "@/components/landing/brand-logo";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { useI18n } from "@/components/i18n/locale-provider";
 
 function SignInContent() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "/dashboard";
@@ -22,9 +25,7 @@ function SignInContent() {
     setErrorMessage(null);
 
     if (!supabase) {
-      setErrorMessage(
-        "Supabase environment variables are missing. Please configure .env.local and restart the dev server."
-      );
+      setErrorMessage(t.auth.missingConfig);
       return;
     }
 
@@ -45,25 +46,27 @@ function SignInContent() {
 
   return (
     <main className="mx-auto max-w-md px-6 py-10 sm:px-8">
-      <header>
-        <Link href="/" aria-label="CrediWise home" className="inline-block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]">
-          <BrandLogo heightPx={40} />
-        </Link>
-        <p className="mt-3 text-sm text-slate-600">Sign in to continue</p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <Link href="/" aria-label={t.nav.homeAria} className="inline-block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]">
+            <BrandLogo heightPx={40} />
+          </Link>
+          <p className="mt-3 text-sm text-slate-600">{t.auth.signInSubtitle}</p>
+        </div>
+        <LanguageSwitcher />
       </header>
 
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         {!supabase ? (
           <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            Missing Supabase config. Add `NEXT_PUBLIC_SUPABASE_URL` and
-            `NEXT_PUBLIC_SUPABASE_ANON_KEY` to `.env.local`, then restart `npm run dev`.
+            {t.auth.missingConfigBanner}
           </p>
         ) : null}
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="email">
-              Email
+              {t.auth.email}
             </label>
             <input
               id="email"
@@ -79,7 +82,7 @@ function SignInContent() {
 
           <div className="space-y-2">
             <label className="text-sm font-medium" htmlFor="password">
-              Password
+              {t.auth.password}
             </label>
             <input
               id="password"
@@ -104,14 +107,14 @@ function SignInContent() {
             disabled={isPending || !supabase}
             className="h-10 w-full rounded-lg bg-slate-900 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60"
           >
-            {isPending ? "Signing in..." : "Sign In"}
+            {isPending ? t.auth.signingIn : t.auth.signIn}
           </button>
         </form>
 
         <p className="mt-5 text-center text-sm text-slate-600">
-          Don’t have an account?{" "}
+          {t.auth.noAccount}{" "}
           <a className="font-medium text-slate-900 underline" href="/auth/sign-up">
-            Sign up
+            {t.nav.signUp}
           </a>
         </p>
       </section>

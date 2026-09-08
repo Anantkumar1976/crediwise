@@ -1,5 +1,7 @@
 "use server";
 
+import type { ContactMessageCode } from "@/lib/i18n/dictionaries";
+
 const LOAN_TYPES = [
   "Home Loan",
   "Car Loan",
@@ -12,7 +14,7 @@ const CONTACT_INBOX = "support@crediwise.co.in";
 
 export interface ContactFormState {
   ok: boolean;
-  message: string | null;
+  code: ContactMessageCode | null;
 }
 
 function readString(formData: FormData, key: string): string {
@@ -37,7 +39,7 @@ export async function submitContactForm(
   formData: FormData,
 ): Promise<ContactFormState> {
   if (readString(formData, "companyWebsite")) {
-    return { ok: true, message: "Thanks — we have received your message." };
+    return { ok: true, code: "received" };
   }
 
   const fullName = readString(formData, "fullName");
@@ -47,29 +49,25 @@ export async function submitContactForm(
   const loanType = readString(formData, "loanType");
 
   if (fullName.length < 2 || fullName.length > 200) {
-    return { ok: false, message: "Please enter your full name." };
+    return { ok: false, code: "invalidName" };
   }
   if (phone.length < 8 || phone.length > 40) {
-    return { ok: false, message: "Please enter a valid phone number." };
+    return { ok: false, code: "invalidPhone" };
   }
   if (!isValidEmail(email) || email.length > 320) {
-    return { ok: false, message: "Please enter a valid email address." };
+    return { ok: false, code: "invalidEmail" };
   }
   if (!LOAN_TYPES.includes(loanType as (typeof LOAN_TYPES)[number])) {
-    return { ok: false, message: "Please select a type of loan." };
+    return { ok: false, code: "invalidLoan" };
   }
   if (notes.length > 2000) {
-    return { ok: false, message: "Additional notes must be 2000 characters or fewer." };
+    return { ok: false, code: "notesTooLong" };
   }
 
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
-    return {
-      ok: false,
-      message:
-        "Contact email is not configured yet. Please write to support@crediwise.co.in directly.",
-    };
+    return { ok: false, code: "notConfigured" };
   }
 
   const text = [
@@ -111,11 +109,8 @@ export async function submitContactForm(
   });
 
   if (!response.ok) {
-    return {
-      ok: false,
-      message: "We could not send your message just now. Please try again or email support@crediwise.co.in.",
-    };
+    return { ok: false, code: "sendFailed" };
   }
 
-  return { ok: true, message: "Thanks — we have received your message and will get back to you shortly." };
+  return { ok: true, code: "received" };
 }

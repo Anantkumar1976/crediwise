@@ -37,21 +37,23 @@ export function isCustomerProfileComplete(
   );
 }
 
-/** Human-readable list of missing requirements (for UI). */
+export type ProfileRequirementKey = "fullName" | "email" | "phone" | "address";
+
+/** Keys of missing requirements (map to translated labels in the UI). */
 export function missingCustomerProfileItems(
   profile: CustomerProfileFields | null,
   authEmail: string | null | undefined
-): string[] {
-  const missing: string[] = [];
+): ProfileRequirementKey[] {
+  const missing: ProfileRequirementKey[] = [];
   const name = profile?.full_name?.trim() ?? "";
   const phone = profile?.phone?.trim() ?? "";
   const address = profile?.address?.trim() ?? "";
   const profileEmail = profile?.email?.trim() ?? "";
   const fromAuth = authEmail?.trim() ?? "";
 
-  if (name.length < MIN_NAME) missing.push("Full name");
-  if (!fromAuth && !profileEmail) missing.push("Email");
-  if (phone.length < MIN_PHONE) missing.push("Phone");
-  if (address.length < MIN_ADDRESS) missing.push("Address");
+  if (name.length < MIN_NAME) missing.push("fullName");
+  if (!fromAuth && !profileEmail) missing.push("email");
+  if (phone.length < MIN_PHONE) missing.push("phone");
+  if (address.length < MIN_ADDRESS) missing.push("address");
   return missing;
 }

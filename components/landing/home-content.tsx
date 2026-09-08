@@ -2,92 +2,45 @@ import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "@/components/landing/brand-logo";
 import { ContactForm } from "@/components/landing/contact-form";
+import { formatMessage } from "@/lib/i18n/format";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 const services = [
-  {
-    title: "Home loans",
-    description:
-      "Find a suitable home loan with competitive rates and flexible repayment options.",
-    href: "/auth/sign-up",
-    cta: "Explore home loans",
-    icon: "home",
-  },
-  {
-    title: "Car loans",
-    description: "Compare offers and move forward with a loan that fits your vehicle plans.",
-    href: "/auth/sign-up",
-    cta: "Explore car loans",
-    icon: "car",
-  },
-  {
-    title: "Personal loans",
-    description: "Support education, healthcare, travel, weddings, and other life goals.",
-    href: "/auth/sign-up",
-    cta: "Explore personal loans",
-    icon: "personal",
-  },
-  {
-    title: "Business loans",
-    description: "Working capital, MSME financing, and growth funding in one place.",
-    href: "/auth/sign-up",
-    cta: "Explore business loans",
-    icon: "business",
-  },
+  { key: "home", href: "/auth/sign-up", icon: "home" },
+  { key: "car", href: "/auth/sign-up", icon: "car" },
+  { key: "personal", href: "/auth/sign-up", icon: "personal" },
+  { key: "business", href: "/auth/sign-up", icon: "business" },
 ] as const;
 
 const howItWorks = [
   {
-    title: "Compare",
-    text: "Explore multiple loan options.",
+    key: "compare",
     icon: "/images/crediwise/compare-search.svg",
     accent: "bg-[#00A88E]",
   },
   {
-    title: "Apply",
-    text: "Submit a simple application.",
+    key: "apply",
     icon: "/images/crediwise/apply-document.svg",
     accent: "bg-[#2F80ED]",
   },
   {
-    title: "Track",
-    text: "Check your application status in real time.",
+    key: "track",
     icon: "/images/crediwise/track-status.svg",
     accent: "bg-[#6C63FF]",
   },
   {
-    title: "Get Approved",
-    text: "Receive approval and move forward.",
+    key: "approved",
     icon: "/images/crediwise/approved-thumb.svg",
     accent: "bg-[#F2994A]",
   },
 ] as const;
 
 const whyChoose = [
-  {
-    title: "Multiple Lenders",
-    text: "Compare options from multiple lending partners.",
-    icon: "/images/crediwise/multiple-lenders.svg",
-  },
-  {
-    title: "Transparent Comparison",
-    text: "Understand rates and options clearly.",
-    icon: "/images/crediwise/transparent-comparison.svg",
-  },
-  {
-    title: "Faster Approvals",
-    text: "A simpler process designed to move quickly.",
-    icon: "/images/crediwise/faster-approvals.svg",
-  },
-  {
-    title: "Expert Guidance",
-    text: "Get help when you need it.",
-    icon: "/images/crediwise/expert-guidance.svg",
-  },
-  {
-    title: "Secure & Reliable",
-    text: "Your information and application journey are handled securely.",
-    icon: "/images/crediwise/secure-reliable.svg",
-  },
+  { key: "lenders", icon: "/images/crediwise/multiple-lenders.svg" },
+  { key: "comparison", icon: "/images/crediwise/transparent-comparison.svg" },
+  { key: "approvals", icon: "/images/crediwise/faster-approvals.svg" },
+  { key: "guidance", icon: "/images/crediwise/expert-guidance.svg" },
+  { key: "secure", icon: "/images/crediwise/secure-reliable.svg" },
 ] as const;
 
 function ServiceIcon({ name }: { name: (typeof services)[number]["icon"] }) {
@@ -143,7 +96,7 @@ function ServiceIcon({ name }: { name: (typeof services)[number]["icon"] }) {
   );
 }
 
-export function HomeContent() {
+export function HomeContent({ t }: { t: Dictionary }) {
   return (
     <>
       <div className="mx-auto max-w-6xl overflow-x-clip px-4 sm:px-6 lg:px-10">
@@ -152,30 +105,33 @@ export function HomeContent() {
             id="services-heading"
             className="text-3xl font-bold tracking-tight text-[#0A2540] sm:text-4xl"
           >
-            Loan options for every goal
+            {t.services.heading}
           </h2>
           <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">
-            Purpose-built offerings for home, vehicle, personal, and business needs.
+            {t.services.subheading}
           </p>
           <div className="mt-10 grid gap-5 sm:grid-cols-2">
-            {services.map((service) => (
-              <article
-                key={service.title}
-                className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70 transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F7F4] text-[#00A88E]">
-                  <ServiceIcon name={service.icon} />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-[#0A2540]">{service.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{service.description}</p>
-                <Link
-                  href={service.href}
-                  className="mt-5 inline-flex text-sm font-semibold text-[#00A88E] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
+            {services.map((service) => {
+              const copy = t.services.items[service.key];
+              return (
+                <article
+                  key={service.key}
+                  className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70 transition hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  {service.cta}
-                </Link>
-              </article>
-            ))}
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F7F4] text-[#00A88E]">
+                    <ServiceIcon name={service.icon} />
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold text-[#0A2540]">{copy.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{copy.description}</p>
+                  <Link
+                    href={service.href}
+                    className="mt-5 inline-flex text-sm font-semibold text-[#00A88E] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
+                  >
+                    {copy.cta}
+                  </Link>
+                </article>
+              );
+            })}
           </div>
         </section>
 
@@ -185,36 +141,39 @@ export function HomeContent() {
           aria-labelledby="how-heading"
         >
           <h2 id="how-heading" className="text-3xl font-bold tracking-tight text-[#0A2540] sm:text-4xl">
-            How It Works
+            {t.howItWorks.heading}
           </h2>
-          <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">A few simple steps to get your loan.</p>
+          <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">{t.howItWorks.subheading}</p>
           <ol className="mt-12 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4 lg:gap-6">
-            {howItWorks.map((step, index) => (
-              <li key={step.title} className="relative text-center">
-                {index < howItWorks.length - 1 ? (
-                  <span
-                    className="pointer-events-none absolute left-[calc(50%+2.25rem)] top-8 hidden h-px w-[calc(100%-2rem)] bg-slate-200 lg:block"
-                    aria-hidden
-                  />
-                ) : null}
-                <div
-                  className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-white shadow-sm ${step.accent}`}
-                >
-                  <Image
-                    src={step.icon}
-                    alt=""
-                    width={32}
-                    height={32}
-                    unoptimized
-                    className="h-8 w-8 brightness-0 invert"
-                  />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold text-[#0A2540]">
-                  {index + 1}. {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{step.text}</p>
-              </li>
-            ))}
+            {howItWorks.map((step, index) => {
+              const copy = t.howItWorks.steps[step.key];
+              return (
+                <li key={step.key} className="relative text-center">
+                  {index < howItWorks.length - 1 ? (
+                    <span
+                      className="pointer-events-none absolute left-[calc(50%+2.25rem)] top-8 hidden h-px w-[calc(100%-2rem)] bg-slate-200 lg:block"
+                      aria-hidden
+                    />
+                  ) : null}
+                  <div
+                    className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-white shadow-sm ${step.accent}`}
+                  >
+                    <Image
+                      src={step.icon}
+                      alt=""
+                      width={32}
+                      height={32}
+                      unoptimized
+                      className="h-8 w-8 brightness-0 invert"
+                    />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold text-[#0A2540]">
+                    {index + 1}. {copy.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{copy.text}</p>
+                </li>
+              );
+            })}
           </ol>
         </section>
 
@@ -231,18 +190,17 @@ export function HomeContent() {
                 id="tools-heading"
                 className="mt-4 text-2xl font-bold tracking-tight text-[#0A2540] sm:text-3xl"
               >
-                Stay in control after approval
+                {t.tools.heading}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-[#3D4F63] sm:text-base">
-                Track EMIs, view repayment schedules, and manage your loan from one dashboard once
-                your application is approved.
+                {t.tools.body}
               </p>
             </div>
             <Link
               href="/auth/sign-up"
               className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-7 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E] lg:mt-0"
             >
-              Open your dashboard
+              {t.tools.cta}
             </Link>
           </div>
         </section>
@@ -253,22 +211,25 @@ export function HomeContent() {
           aria-labelledby="why-heading"
         >
           <h2 id="why-heading" className="text-3xl font-bold tracking-tight text-[#0A2540] sm:text-4xl">
-            Why Choose CrediWise
+            {t.why.heading}
           </h2>
-          <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">Smarter choices. Greater confidence.</p>
+          <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">{t.why.subheading}</p>
           <div className="mt-10 grid grid-cols-2 gap-5 lg:grid-cols-5">
-            {whyChoose.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 max-lg:last:col-span-2 max-lg:last:mx-auto max-lg:last:max-w-xs"
-              >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E6F7F4] text-[#00A88E]">
-                  <Image src={item.icon} alt="" width={28} height={28} unoptimized className="h-7 w-7" />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold text-[#0A2540] sm:text-base">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{item.text}</p>
-              </article>
-            ))}
+            {whyChoose.map((item) => {
+              const copy = t.why.items[item.key];
+              return (
+                <article
+                  key={item.key}
+                  className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-md sm:p-6 max-lg:last:col-span-2 max-lg:last:mx-auto max-lg:last:max-w-xs"
+                >
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E6F7F4] text-[#00A88E]">
+                    <Image src={item.icon} alt="" width={28} height={28} unoptimized className="h-7 w-7" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold text-[#0A2540] sm:text-base">{copy.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#3D4F63]">{copy.text}</p>
+                </article>
+              );
+            })}
           </div>
         </section>
       </div>
@@ -279,24 +240,23 @@ export function HomeContent() {
       >
         <div className="mx-auto flex max-w-6xl flex-col gap-10 overflow-x-clip px-4 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-stretch lg:gap-12 lg:px-10">
           <div className="order-2 flex flex-col justify-center lg:order-1">
-            <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">CUSTOMER STORIES</p>
+            <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">{t.testimonial.eyebrow}</p>
             <h2
               id="testimonial-heading"
               className="mt-3 text-[1.75rem] font-bold leading-tight tracking-tight text-[#0A2540] sm:text-[2rem] lg:text-[2.5rem]"
             >
-              Trusted by People Making
+              {t.testimonial.headingLine1}
               <br />
-              Smarter Financial Choices
+              {t.testimonial.headingLine2}
             </h2>
             <blockquote className="mt-8 max-w-xl">
               <p className="text-5xl font-serif leading-none text-[#00A88E]" aria-hidden>
                 “
               </p>
               <p className="-mt-4 text-lg leading-relaxed text-[#3D4F63]">
-                CrediWise helped me compare my options clearly and made the loan process feel much
-                simpler.
+                {t.testimonial.quote}
               </p>
-              <div className="mt-4 flex gap-1 text-[#00A88E]" aria-label="5 out of 5 stars">
+              <div className="mt-4 flex gap-1 text-[#00A88E]" aria-label={t.testimonial.starsLabel}>
                 {Array.from({ length: 5 }).map((_, starIndex) => (
                   <svg key={starIndex} className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
                     <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.18 3.64a1 1 0 0 0 .95.69h3.83c.97 0 1.37 1.24.59 1.81l-3.1 2.25a1 1 0 0 0-.36 1.12l1.18 3.64c.3.92-.76 1.69-1.54 1.12l-3.1-2.25a1 1 0 0 0-1.16 0l-3.1 2.25c-.78.57-1.84-.2-1.54-1.12l1.18-3.64a1 1 0 0 0-.36-1.12L2.5 9.07c-.78-.57-.38-1.81.59-1.81h3.83a1 1 0 0 0 .95-.69l1.18-3.64Z" />
@@ -304,15 +264,15 @@ export function HomeContent() {
                 ))}
               </div>
               <footer className="mt-6">
-                <p className="font-semibold text-[#0A2540]">Priya S., Pune</p>
-                <p className="mt-1 text-sm text-[#3D4F63]">Home Loan Customer</p>
+                <p className="font-semibold text-[#0A2540]">{t.testimonial.name}</p>
+                <p className="mt-1 text-sm text-[#3D4F63]">{t.testimonial.role}</p>
               </footer>
             </blockquote>
           </div>
           <div className="order-1 relative min-h-[260px] overflow-hidden rounded-3xl bg-slate-200 sm:min-h-[320px] lg:order-2 lg:min-h-full">
             <Image
               src="/images/crediwise/crediwise-customer-photo.png"
-              alt="CrediWise customer sharing her loan experience"
+              alt={t.testimonial.photoAlt}
               fill
               sizes="(max-width: 1024px) 92vw, 45vw"
               className="object-cover object-[58%_center]"
@@ -326,28 +286,28 @@ export function HomeContent() {
           <div className="relative aspect-[16/10] w-full">
             <Image
               src="/images/crediwise/crediwise-cta-sunrise.png"
-              alt="A young man with a backpack looking toward a city skyline at sunrise"
+              alt={t.cta.photoAlt}
               fill
               sizes="100vw"
               className="object-cover object-[72%_center]"
             />
           </div>
           <div className="px-6 py-8">
-            <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">YOUR NEXT MOVE</p>
+            <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">{t.cta.eyebrow}</p>
             <h2
               id="cta-heading"
               className="mt-3 text-[1.75rem] font-bold leading-tight tracking-tight text-[#0A2540]"
             >
-              Take the Next Step Towards Your Goals
+              {t.cta.heading}
             </h2>
             <p className="mt-3 text-base leading-relaxed text-[#3D4F63]">
-              Join thousands who trust CrediWise for smarter loan decisions.
+              {t.cta.body}
             </p>
             <Link
               href="/auth/sign-up"
               className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-8 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
             >
-              Get Started →
+              {t.cta.button}
             </Link>
           </div>
         </div>
@@ -355,7 +315,7 @@ export function HomeContent() {
         <div className="relative mx-auto hidden min-h-[22rem] max-w-6xl overflow-hidden rounded-3xl md:block">
           <Image
             src="/images/crediwise/crediwise-cta-sunrise.png"
-            alt="A young man with a backpack looking toward a city skyline at sunrise"
+            alt={t.cta.photoAlt}
             fill
             sizes="(max-width: 1440px) 100vw, 1152px"
             className="object-cover object-[70%_center]"
@@ -366,20 +326,20 @@ export function HomeContent() {
           />
           <div className="relative z-10 flex w-[42%] min-w-[17rem] max-w-[45%] items-center px-8 py-14 lg:px-12 lg:py-16">
             <div>
-              <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">YOUR NEXT MOVE</p>
+              <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">{t.cta.eyebrow}</p>
               <h2 className="mt-3 text-[2.25rem] font-bold leading-[1.2] tracking-tight text-[#0A2540] lg:text-[2.75rem]">
-                Take the Next Step
+                {t.cta.headingLine1}
                 <br />
-                Towards Your Goals
+                {t.cta.headingLine2}
               </h2>
               <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-[#3D4F63]">
-                Join thousands who trust CrediWise for smarter loan decisions.
+                {t.cta.body}
               </p>
               <Link
                 href="/auth/sign-up"
                 className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-8 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
               >
-                Get Started →
+                {t.cta.button}
               </Link>
             </div>
           </div>
@@ -392,10 +352,10 @@ export function HomeContent() {
         aria-labelledby="contact-heading"
       >
         <h2 id="contact-heading" className="text-3xl font-bold tracking-tight text-[#0A2540] sm:text-4xl">
-          Contact
+          {t.contact.heading}
         </h2>
         <p className="mt-3 max-w-2xl text-lg text-[#3D4F63]">
-          Tell us a little about what you need. We&apos;ll get back to you at the details you share.
+          {t.contact.subheading}
         </p>
         <ContactForm />
       </section>
@@ -403,23 +363,23 @@ export function HomeContent() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({ t }: { t: Dictionary }) {
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
         <BrandLogo heightPx={50} />
         <p className="text-sm text-slate-500">
-          © {new Date().getFullYear()} CrediWise. All rights reserved.
+          {formatMessage(t.footer.copyright, { year: new Date().getFullYear() })}
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
           <a href="#about" className="text-slate-600 hover:text-slate-900">
-            About
+            {t.footer.about}
           </a>
           <a href="#contact" className="text-slate-600 hover:text-slate-900">
-            Contact
+            {t.footer.contact}
           </a>
           <Link href="/auth/sign-in" className="text-slate-600 hover:text-slate-900">
-            Sign in
+            {t.footer.signIn}
           </Link>
         </div>
       </div>

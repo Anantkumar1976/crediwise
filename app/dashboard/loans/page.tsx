@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { formatMessage } from "@/lib/i18n/format";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { appStatusLabel, loanTypeLabel } from "@/lib/i18n/labels";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 interface LoanRow {
@@ -9,6 +13,9 @@ interface LoanRow {
 }
 
 export default async function MyLoansPage() {
+  const locale = await getRequestLocale();
+  const t = getDictionary(locale);
+  const d = t.dashboard;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -30,10 +37,8 @@ export default async function MyLoansPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">My Loans</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Approved and disbursed applications — open a case for documents, EMI schedule, and details.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{d.loans.title}</h1>
+        <p className="mt-1 text-sm text-slate-600">{d.loans.subtitle}</p>
       </div>
 
       {error ? (
@@ -44,16 +49,13 @@ export default async function MyLoansPage() {
 
       {rows.length === 0 ? (
         <section className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
-          <p className="text-sm font-medium text-slate-700">No active loans yet</p>
-          <p className="mt-2 text-sm text-slate-600">
-            When an application reaches <strong>Approved</strong> or <strong>Disbursed</strong>, it
-            will appear here.
-          </p>
+          <p className="text-sm font-medium text-slate-700">{d.loans.emptyTitle}</p>
+          <p className="mt-2 text-sm text-slate-600">{d.loans.emptyBody}</p>
           <Link
             href="/dashboard/applications"
             className="mt-6 inline-flex rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            View applications
+            {d.loans.viewApplications}
           </Link>
         </section>
       ) : (
@@ -66,7 +68,7 @@ export default async function MyLoansPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    {row.loan_type} loan
+                    {formatMessage(d.loans.loanLabel, { type: loanTypeLabel(t, row.loan_type) })}
                   </p>
                   <p className="mt-1 font-mono text-xs text-slate-500">{row.id}</p>
                 </div>
@@ -77,18 +79,15 @@ export default async function MyLoansPage() {
                       : "bg-emerald-100 text-emerald-900"
                   }`}
                 >
-                  {row.current_status}
+                  {appStatusLabel(t, row.current_status)}
                 </span>
               </div>
-              <p className="mt-4 text-sm text-slate-600">
-                Open the application to see documents, repayment schedule (when available), and loan
-                details.
-              </p>
+              <p className="mt-4 text-sm text-slate-600">{d.loans.cardBody}</p>
               <Link
                 href={`/dashboard/applications/${row.id}`}
                 className="mt-6 inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 text-sm font-semibold text-white hover:bg-slate-800"
               >
-                View loan
+                {d.loans.viewLoan}
               </Link>
             </article>
           ))}

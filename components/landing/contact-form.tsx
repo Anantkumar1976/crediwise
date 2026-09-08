@@ -2,29 +2,32 @@
 
 import { useActionState } from "react";
 import { submitContactForm, type ContactFormState } from "@/app/contact-actions";
+import { useI18n } from "@/components/i18n/locale-provider";
 
-const LOAN_OPTIONS = [
-  "Home Loan",
-  "Car Loan",
-  "Personal Loan",
-  "Business Loan",
-  "Not sure yet",
+const LOAN_VALUES = [
+  { value: "Home Loan", key: "home" },
+  { value: "Car Loan", key: "car" },
+  { value: "Personal Loan", key: "personal" },
+  { value: "Business Loan", key: "business" },
+  { value: "Not sure yet", key: "unsure" },
 ] as const;
 
-const initialState: ContactFormState = { ok: false, message: null };
+const initialState: ContactFormState = { ok: false, code: null };
 
 const fieldClass =
   "h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#0A2540] outline-none ring-[#00A88E]/30 focus:ring-2";
 
 export function ContactForm() {
+  const { t } = useI18n();
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
+  const copy = t.contact;
 
   return (
     <form action={formAction} className="mt-8 max-w-2xl space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="fullName" className="text-sm font-medium text-[#0A2540]">
-            Full name <span className="text-rose-600">*</span>
+            {copy.fullName} <span className="text-rose-600">*</span>
           </label>
           <input
             id="fullName"
@@ -39,7 +42,7 @@ export function ContactForm() {
         </div>
         <div className="space-y-2">
           <label htmlFor="phone" className="text-sm font-medium text-[#0A2540]">
-            Phone <span className="text-rose-600">*</span>
+            {copy.phone} <span className="text-rose-600">*</span>
           </label>
           <input
             id="phone"
@@ -56,7 +59,7 @@ export function ContactForm() {
 
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium text-[#0A2540]">
-          Email ID <span className="text-rose-600">*</span>
+          {copy.email} <span className="text-rose-600">*</span>
         </label>
         <input
           id="email"
@@ -71,15 +74,15 @@ export function ContactForm() {
 
       <div className="space-y-2">
         <label htmlFor="loanType" className="text-sm font-medium text-[#0A2540]">
-          Type of loan <span className="text-rose-600">*</span>
+          {copy.loanType} <span className="text-rose-600">*</span>
         </label>
         <select id="loanType" name="loanType" required defaultValue="" className={fieldClass}>
           <option value="" disabled>
-            Select type of loan
+            {copy.loanTypePlaceholder}
           </option>
-          {LOAN_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
+          {LOAN_VALUES.map((option) => (
+            <option key={option.value} value={option.value}>
+              {copy.loanOptions[option.key]}
             </option>
           ))}
         </select>
@@ -87,7 +90,7 @@ export function ContactForm() {
 
       <div className="space-y-2">
         <label htmlFor="notes" className="text-sm font-medium text-[#0A2540]">
-          Additional notes
+          {copy.notes}
         </label>
         <textarea
           id="notes"
@@ -103,7 +106,7 @@ export function ContactForm() {
         <input id="companyWebsite" name="companyWebsite" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
-      {state.message ? (
+      {state.code ? (
         <p
           role="status"
           className={`rounded-lg px-3 py-2 text-sm ${
@@ -112,7 +115,7 @@ export function ContactForm() {
               : "border border-rose-200 bg-rose-50 text-rose-800"
           }`}
         >
-          {state.message}
+          {copy.messages[state.code]}
         </p>
       ) : null}
 
@@ -121,7 +124,7 @@ export function ContactForm() {
         disabled={isPending}
         className="inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-8 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "Sending..." : "Send message"}
+        {isPending ? copy.sending : copy.submit}
       </button>
     </form>
   );

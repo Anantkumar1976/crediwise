@@ -10,6 +10,10 @@ import {
   CustomerRepaymentScheduleSection,
   type CustomerEmiRow,
 } from "./customer-repayment-schedule";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { formatMessage } from "@/lib/i18n/format";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { appStatusLabel, loanTypeLabel } from "@/lib/i18n/labels";
 
 interface ApplicationRecord {
   id: string;
@@ -41,6 +45,9 @@ export default async function ApplicationDetailsPage(props: {
 }) {
   const params = await props.params;
   const applicationId = params.id;
+  const locale = await getRequestLocale();
+  const t = getDictionary(locale);
+  const d = t.dashboard;
 
   const supabase = await createSupabaseServerClient();
   const {
@@ -62,13 +69,13 @@ export default async function ApplicationDetailsPage(props: {
     return (
       <div className="mx-auto max-w-4xl">
         <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          Application not found or you do not have access.
+          {d.applicationDetail.notFound}
         </p>
         <Link
           href="/dashboard/applications"
           className="mt-4 inline-flex text-sm font-medium text-sky-800 underline"
         >
-          Back to applications
+          {d.applicationDetail.back}
         </Link>
       </div>
     );
@@ -143,21 +150,23 @@ export default async function ApplicationDetailsPage(props: {
     <div className="mx-auto max-w-4xl space-y-6">
       <header className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <Link href="/dashboard/applications" className="text-sm font-semibold text-sky-800 hover:underline">
-          ← Back to applications
+          ← {d.applicationDetail.back}
         </Link>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight capitalize text-slate-900 sm:text-3xl">
-          {app.loan_type} loan application form
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          {formatMessage(d.applicationDetail.heading, { type: loanTypeLabel(t, app.loan_type) })}
         </h1>
-        <p className="mt-2 text-sm text-slate-600">Application ID: {app.id}</p>
+        <p className="mt-2 text-sm text-slate-600">
+          {formatMessage(d.applicationDetail.applicationId, { id: app.id })}
+        </p>
         <p className="mt-1 text-sm text-slate-600">
-          Status: <span className="font-semibold">{app.current_status}</span>
+          {formatMessage(d.applicationDetail.status, { status: appStatusLabel(t, app.current_status) })}
         </p>
       </header>
 
       <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         {detailsError ? (
           <p className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
-            Could not load existing details: {detailsError}
+            {formatMessage(d.applicationDetail.loadDetailsError, { error: detailsError })}
           </p>
         ) : null}
 
@@ -168,7 +177,7 @@ export default async function ApplicationDetailsPage(props: {
             <>
               <div className="space-y-2">
                 <label htmlFor="propertyAddress" className="text-sm font-medium">
-                  Property Address
+                  {d.applicationDetail.propertyAddress}
                 </label>
                 <input
                   id="propertyAddress"
@@ -181,7 +190,7 @@ export default async function ApplicationDetailsPage(props: {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="propertyValue" className="text-sm font-medium">
-                    Property Value
+                    {d.applicationDetail.propertyValue}
                   </label>
                   <input
                     id="propertyValue"
@@ -195,7 +204,7 @@ export default async function ApplicationDetailsPage(props: {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="downPayment" className="text-sm font-medium">
-                    Down Payment
+                    {d.applicationDetail.downPayment}
                   </label>
                   <input
                     id="downPayment"
@@ -212,7 +221,7 @@ export default async function ApplicationDetailsPage(props: {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="loanAmount" className="text-sm font-medium">
-                    Loan Amount
+                    {d.applicationDetail.loanAmount}
                   </label>
                   <input
                     id="loanAmount"
@@ -226,7 +235,7 @@ export default async function ApplicationDetailsPage(props: {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="applicantCount" className="text-sm font-medium">
-                    Applicant Count
+                    {d.applicationDetail.applicantCount}
                   </label>
                   <input
                     id="applicantCount"
@@ -241,15 +250,12 @@ export default async function ApplicationDetailsPage(props: {
               </div>
 
               <div className="mt-8 border-t border-slate-200 pt-6">
-                <h3 className="text-base font-semibold text-slate-900">Employment details</h3>
-                <p className="mt-1 text-xs text-slate-600">
-                  Tell us whether you earn through salaried service or business income, and the annual
-                  figure we should use for assessment.
-                </p>
+                <h3 className="text-base font-semibold text-slate-900">{d.applicationDetail.employmentTitle}</h3>
+                <p className="mt-1 text-xs text-slate-600">{d.applicationDetail.employmentBody}</p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="occupation" className="text-sm font-medium">
-                      Occupation
+                      {d.applicationDetail.occupation}
                     </label>
                     <select
                       id="occupation"
@@ -257,14 +263,14 @@ export default async function ApplicationDetailsPage(props: {
                       defaultValue={homeDetails?.occupation ?? ""}
                       className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none ring-slate-900/10 focus:ring-2"
                     >
-                      <option value="">Select…</option>
-                      <option value="service">Service (salaried)</option>
-                      <option value="business">Business (self-employed / business)</option>
+                      <option value="">{d.applicationDetail.occupationSelect}</option>
+                      <option value="service">{d.applicationDetail.occupationService}</option>
+                      <option value="business">{d.applicationDetail.occupationBusiness}</option>
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="annualSalaryOrRevenue" className="text-sm font-medium">
-                      Annual salary / business revenue
+                      {d.applicationDetail.annualSalary}
                     </label>
                     <input
                       id="annualSalaryOrRevenue"
@@ -272,7 +278,7 @@ export default async function ApplicationDetailsPage(props: {
                       type="number"
                       min="0"
                       step="0.01"
-                      placeholder="Amount per year"
+                      placeholder={d.applicationDetail.annualSalaryPlaceholder}
                       defaultValue={homeDetails?.annual_salary_or_revenue ?? ""}
                       className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none ring-slate-900/10 focus:ring-2"
                     />
@@ -284,7 +290,7 @@ export default async function ApplicationDetailsPage(props: {
             <>
               <div className="space-y-2">
                 <label htmlFor="businessName" className="text-sm font-medium">
-                  Business Name
+                  {d.applicationDetail.businessName}
                 </label>
                 <input
                   id="businessName"
@@ -296,7 +302,7 @@ export default async function ApplicationDetailsPage(props: {
 
               <div className="space-y-2">
                 <label htmlFor="purpose" className="text-sm font-medium">
-                  Loan Purpose
+                  {d.applicationDetail.purpose}
                 </label>
                 <textarea
                   id="purpose"
@@ -310,7 +316,7 @@ export default async function ApplicationDetailsPage(props: {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="workingCapital" className="text-sm font-medium">
-                    Working Capital Requirement
+                    {d.applicationDetail.workingCapital}
                   </label>
                   <input
                     id="workingCapital"
@@ -324,7 +330,7 @@ export default async function ApplicationDetailsPage(props: {
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="loanAmount" className="text-sm font-medium">
-                    Loan Amount
+                    {d.applicationDetail.loanAmount}
                   </label>
                   <input
                     id="loanAmount"
@@ -339,15 +345,12 @@ export default async function ApplicationDetailsPage(props: {
               </div>
 
               <div className="mt-8 border-t border-slate-200 pt-6">
-                <h3 className="text-base font-semibold text-slate-900">Business details</h3>
-                <p className="mt-1 text-xs text-slate-600">
-                  Annual business revenue: attach your <strong>last year ITR-V</strong> under{" "}
-                  <strong>Income proof</strong> in the document checklist below for income verification.
-                </p>
+                <h3 className="text-base font-semibold text-slate-900">{d.applicationDetail.businessDetailsTitle}</h3>
+                <p className="mt-1 text-xs text-slate-600">{d.applicationDetail.businessDetailsBody}</p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="yearOfIncorporation" className="text-sm font-medium">
-                      Year of incorporation
+                      {d.applicationDetail.yearOfIncorporation}
                     </label>
                     <input
                       id="yearOfIncorporation"
@@ -356,14 +359,14 @@ export default async function ApplicationDetailsPage(props: {
                       min="1800"
                       max="2100"
                       step="1"
-                      placeholder="e.g. 2018"
+                      placeholder={d.applicationDetail.yearPlaceholder}
                       defaultValue={businessDetails?.year_of_incorporation ?? ""}
                       className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none ring-slate-900/10 focus:ring-2"
                     />
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="annualBusinessRevenue" className="text-sm font-medium">
-                      Annual business revenue (last year)
+                      {d.applicationDetail.annualRevenue}
                     </label>
                     <input
                       id="annualBusinessRevenue"
@@ -371,7 +374,7 @@ export default async function ApplicationDetailsPage(props: {
                       type="number"
                       min="0"
                       step="0.01"
-                      placeholder="Per last year ITR"
+                      placeholder={d.applicationDetail.annualRevenuePlaceholder}
                       defaultValue={businessDetails?.annual_business_revenue ?? ""}
                       className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none ring-slate-900/10 focus:ring-2"
                     />
@@ -388,7 +391,7 @@ export default async function ApplicationDetailsPage(props: {
               value="save"
               className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-100"
             >
-              Save Draft
+              {d.applicationDetail.saveDraft}
             </button>
             <button
               type="submit"
@@ -397,7 +400,7 @@ export default async function ApplicationDetailsPage(props: {
               disabled={!isDraft}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save and Submit
+              {d.applicationDetail.saveAndSubmit}
             </button>
           </div>
         </form>
@@ -405,7 +408,7 @@ export default async function ApplicationDetailsPage(props: {
 
       {documentsError ? (
         <section className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          Documents could not be loaded: {documentsError.message}
+          {formatMessage(d.applicationDetail.loadDocumentsError, { error: documentsError.message })}
         </section>
       ) : (
         <CustomerDocumentsSection
@@ -417,7 +420,7 @@ export default async function ApplicationDetailsPage(props: {
       )}
 
       {showRepaymentSchedule ? (
-        <CustomerRepaymentScheduleSection emiRows={emiRows} emiError={emiError} />
+        <CustomerRepaymentScheduleSection emiRows={emiRows} emiError={emiError} t={t} locale={locale} />
       ) : null}
     </div>
   );

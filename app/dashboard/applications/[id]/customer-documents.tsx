@@ -7,10 +7,12 @@ import {
   DOCUMENT_MAX_BYTES,
   DOCUMENT_TYPE_OPTIONS,
   DOCUMENTS_BUCKET,
-  documentTypeLabel,
   requiredDocumentTypesForLoan,
 } from "@/lib/documents/constants";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useI18n } from "@/components/i18n/locale-provider";
+import { formatDashboardDateTime, formatMessage } from "@/lib/i18n/format";
+import { docStatusLabel, docTypeLabel } from "@/lib/i18n/labels";
 
 export interface CustomerDocumentRow {
   id: string;
@@ -32,15 +34,13 @@ function allowedMimeType(mime: string) {
   );
 }
 
-function formatStorageUploadError(raw: string) {
+function formatStorageUploadError(raw: string, bucketMissing: string) {
   const lower = raw.toLowerCase();
   const isBucketMissing =
     lower.includes("bucket not found") ||
     (lower.includes("bucket") && lower.includes("not found"));
   if (isBucketMissing) {
-    return (
-      'Storage bucket "documents" does not exist yet. In Supabase: open Storage → "New bucket" → name it exactly documents (keep it private). Or run the SQL in supabase/sql/documents_storage.sql (creates the bucket + policies), then try again.'
-    );
+    return bucketMissing;
   }
   return raw;
 }
@@ -78,6 +78,8 @@ function DocumentChecklist({
   loanType: "home" | "business";
   documents: CustomerDocumentRow[];
 }) {
+  const { t } = useI18n();
+  const copy = t.dashboard.docs;
   const required = [...requiredDocumentTypesForLoan(loanType)];
   const approvedCount = required.filter(
     (t) => getLatestForType(documents, t)?.status === "Approved"
@@ -87,29 +89,27 @@ function DocumentChecklist({
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-900">Required document checklist</h3>
+      <h3 className="text-sm font-semibold text-slate-900">{copy.checklistTitle}</h3>
       <p className="mt-1 text-xs text-slate-600">
-        {loanType === "home"
-          ? "Home loan: upload ID, income, bank statements, and property-related documents."
-          : "Business loan: upload ID, income, bank statements, and business registration."}{" "}
+        {loanType === "home" ? copy.checklistHome : copy.checklistBusiness}{" "}
         <span className="font-medium text-slate-800">
-          {approvedCount}/{required.length} approved
+          {formatMessage(copy.approvedCount, { n: approvedCount, total: required.length })}
         </span>
         ·{" "}
         <span className="font-medium text-slate-800">
-          {submittedCount}/{required.length} received
+          {formatMessage(copy.receivedCount, { n: submittedCount, total: required.length })}
         </span>
       </p>
       <ul className="mt-4 divide-y divide-slate-200 rounded-lg border border-slate-200">
         {required.map((type) => {
           const latest = getLatestForType(documents, type);
-          const label = documentTypeLabel(type);
+          const label = docTypeLabel(t, type);
           return (
             <li key={type} className="flex flex-col gap-1 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-sm font-medium text-slate-800">{label}</span>
               {!latest ? (
                 <span className="inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                  Not uploaded
+                  {copy.notUploaded}
                 </span>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
@@ -118,11 +118,11 @@ function DocumentChecklist({
                       latest.status
                     )}`}
                   >
-                    {latest.status}
+                    {docStatusLabel(t, latest.status)}
                   </span>
                   {latest.status === "Re-upload" ? (
                     <span className="text-xs font-medium text-rose-700">
-                      Ops requested a new file — use “Replace file” below.
+                      {copy.reuploadHint}
                     </span>
                   ) : null}
                 </div>
@@ -132,8 +132,7 @@ function DocumentChecklist({
         })}
       </ul>
       <p className="mt-3 text-xs text-slate-500">
-        Use <strong>Add another document</strong> for each required type (and optional{" "}
-        <strong>Other</strong> extras). Status changes after operations reviews your files.
+        {copy.checklistFooter}
       </p>
     </div>
   );
@@ -153,6 +152,8 @@ export function CustomerDocumentsSection({
   initialDocuments,
 }: CustomerDocumentsSectionProps) {
   const router = useRouter();
+  const { t, locale } = useI18n();
+  const copy = t.dashboard.docs;
   const supabase = getSupabaseBrowserClient();
   const [message, setMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -160,14 +161,14 @@ export function CustomerDocumentsSection({
 
   async function handleDownload(path: string) {
     if (!supabase) {
-      setMessage("Supabase client not configured.");
+      setMessage(copy.supabaseMissing);
       return;
     }
     const { data, error } = await supabase.storage
       .from(DOCUMENTS_BUCKET)
       .createSignedUrl(path, 3600);
     if (error || !data?.signedUrl) {
-      setMessage(error?.message ?? "Could not create download link.");
+      setMessage(error?.message ?? copy.downloadLink);
       return;
     }
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
@@ -176,27 +177,27 @@ export function CustomerDocumentsSection({
   async function handleUpload(formData: FormData) {
     setMessage(null);
     if (!supabase) {
-      setMessage("Supabase client not configured.");
+      setMessage(copy.supabaseMissing);
       return;
     }
 
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      setMessage("Please choose a file.");
+      setMessage(copy.chooseFile);
       return;
     }
     if (file.size > DOCUMENT_MAX_BYTES) {
-      setMessage("File must be 10 MB or smaller.");
+      setMessage(copy.fileTooLarge);
       return;
     }
     if (!allowedMimeType(file.type)) {
-      setMessage("Only PDF, PNG, and JPG files are allowed.");
+      setMessage(copy.fileType);
       return;
     }
 
     const documentType = formData.get("documentType");
     if (typeof documentType !== "string" || !documentType) {
-      setMessage("Please select a document type.");
+      setMessage(copy.chooseType);
       return;
     }
 
@@ -206,7 +207,7 @@ export function CustomerDocumentsSection({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setMessage("You must be signed in.");
+        setMessage(copy.signedIn);
         return;
       }
 
@@ -221,7 +222,7 @@ export function CustomerDocumentsSection({
         });
 
       if (uploadError) {
-        setMessage(formatStorageUploadError(uploadError.message));
+        setMessage(formatStorageUploadError(uploadError.message, copy.bucketMissing));
         return;
       }
 
@@ -255,7 +256,7 @@ export function CustomerDocumentsSection({
         }
       }
 
-      setMessage("Document uploaded.");
+      setMessage(copy.uploaded);
       router.refresh();
     } finally {
       setIsUploading(false);
@@ -265,21 +266,21 @@ export function CustomerDocumentsSection({
   async function handleReupload(documentId: string, previousStoragePath: string, formData: FormData) {
     setMessage(null);
     if (!supabase) {
-      setMessage("Supabase client not configured.");
+      setMessage(copy.supabaseMissing);
       return;
     }
 
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) {
-      setMessage("Please choose a replacement file.");
+      setMessage(copy.chooseReplacement);
       return;
     }
     if (file.size > DOCUMENT_MAX_BYTES) {
-      setMessage("File must be 10 MB or smaller.");
+      setMessage(copy.fileTooLarge);
       return;
     }
     if (!allowedMimeType(file.type)) {
-      setMessage("Only PDF, PNG, and JPG files are allowed.");
+      setMessage(copy.fileType);
       return;
     }
 
@@ -289,7 +290,7 @@ export function CustomerDocumentsSection({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setMessage("You must be signed in.");
+        setMessage(copy.signedIn);
         return;
       }
 
@@ -304,7 +305,7 @@ export function CustomerDocumentsSection({
         });
 
       if (uploadError) {
-        setMessage(formatStorageUploadError(uploadError.message));
+        setMessage(formatStorageUploadError(uploadError.message, copy.bucketMissing));
         return;
       }
 
@@ -334,7 +335,7 @@ export function CustomerDocumentsSection({
         await supabase.storage.from(DOCUMENTS_BUCKET).remove([previousStoragePath]);
       }
 
-      setMessage("Document replaced. Our team will review the new file.");
+      setMessage(copy.replaced);
       router.refresh();
     } finally {
       setReuploadingId(null);
@@ -348,10 +349,8 @@ export function CustomerDocumentsSection({
       <DocumentChecklist loanType={loanType} documents={initialDocuments} />
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">Documents</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Upload PDF, PNG, or JPG up to 10 MB. Status updates appear after operations review.
-        </p>
+        <h2 className="text-lg font-semibold">{copy.title}</h2>
+        <p className="mt-2 text-sm text-slate-600">{copy.body}</p>
 
         {message ? (
           <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
@@ -361,20 +360,20 @@ export function CustomerDocumentsSection({
 
         {allowUpload && reuploadDocs.length > 0 ? (
           <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50/80 p-4">
-            <h3 className="text-sm font-semibold text-rose-900">Replace files (re-upload requested)</h3>
-            <p className="mt-1 text-xs text-rose-800">
-              Operations marked these documents for a new upload. Replace each one with a corrected file.
-            </p>
+            <h3 className="text-sm font-semibold text-rose-900">{copy.replaceTitle}</h3>
+            <p className="mt-1 text-xs text-rose-800">{copy.replaceBody}</p>
             <ul className="mt-3 space-y-4">
               {reuploadDocs.map((doc) => (
                 <li
                   key={doc.id}
                   className="rounded-lg border border-rose-200 bg-white p-3"
                 >
-                  <p className="text-sm font-medium capitalize text-slate-800">
-                    {doc.document_type.replace(/_/g, " ")}
+                  <p className="text-sm font-medium text-slate-800">
+                    {docTypeLabel(t, doc.document_type)}
                   </p>
-                  <p className="text-xs text-slate-500">Previous: {doc.file_name ?? doc.storage_path}</p>
+                  <p className="text-xs text-slate-500">
+                    {formatMessage(copy.previous, { name: doc.file_name ?? doc.storage_path })}
+                  </p>
                   <form
                     className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end"
                     action={(fd) => handleReupload(doc.id, doc.storage_path, fd)}
@@ -391,7 +390,7 @@ export function CustomerDocumentsSection({
                       disabled={reuploadingId === doc.id || !supabase}
                       className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-rose-700 px-4 text-sm font-semibold text-white hover:bg-rose-800 disabled:opacity-50"
                     >
-                      {reuploadingId === doc.id ? "Uploading…" : "Replace file"}
+                      {reuploadingId === doc.id ? copy.uploading : copy.replaceFile}
                     </button>
                   </form>
                 </li>
@@ -402,14 +401,14 @@ export function CustomerDocumentsSection({
 
         {allowUpload ? (
           <div className="mt-4">
-            <h3 className="text-sm font-semibold text-slate-800">Add another document</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{copy.addTitle}</h3>
             <form
               className="mt-2 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4"
               action={handleUpload}
             >
               <div className="space-y-2">
                 <label htmlFor="documentType" className="text-sm font-medium">
-                  Document type
+                  {copy.documentType}
                 </label>
                 <select
                   id="documentType"
@@ -419,14 +418,14 @@ export function CustomerDocumentsSection({
                 >
                   {DOCUMENT_TYPE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
-                      {o.label}
+                      {docTypeLabel(t, o.value)}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <label htmlFor="file" className="text-sm font-medium">
-                  File
+                  {copy.file}
                 </label>
                 <input
                   id="file"
@@ -442,20 +441,20 @@ export function CustomerDocumentsSection({
                 disabled={isUploading || !supabase}
                 className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
               >
-                {isUploading ? "Uploading…" : "Upload"}
+                {isUploading ? copy.uploading : copy.upload}
               </button>
             </form>
           </div>
         ) : (
           <p className="mt-4 text-sm text-slate-600">
-            Uploads are closed for this application status.
+            {copy.uploadsClosed}
           </p>
         )}
 
         <div className="mt-6">
-          <h3 className="text-sm font-semibold text-slate-800">All uploaded files</h3>
+          <h3 className="text-sm font-semibold text-slate-800">{copy.allFiles}</h3>
           {initialDocuments.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-600">No documents yet.</p>
+            <p className="mt-2 text-sm text-slate-600">{copy.empty}</p>
           ) : (
             <ul className="mt-2 space-y-2">
               {initialDocuments.map((doc) => (
@@ -464,8 +463,8 @@ export function CustomerDocumentsSection({
                   className="flex flex-col gap-2 rounded-lg border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="text-sm font-medium capitalize">
-                      {doc.document_type.replace(/_/g, " ")}
+                    <p className="text-sm font-medium">
+                      {docTypeLabel(t, doc.document_type)}
                     </p>
                     <p className="text-xs text-slate-500">{doc.file_name ?? doc.storage_path}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -474,10 +473,10 @@ export function CustomerDocumentsSection({
                           doc.status
                         )}`}
                       >
-                        {doc.status}
+                        {docStatusLabel(t, doc.status)}
                       </span>
                       {doc.version != null ? <span>v{doc.version}</span> : null}
-                      <span>{new Date(doc.created_at).toLocaleString()}</span>
+                      <span>{formatDashboardDateTime(doc.created_at, locale)}</span>
                     </p>
                   </div>
                   <button
@@ -485,7 +484,7 @@ export function CustomerDocumentsSection({
                     onClick={() => void handleDownload(doc.storage_path)}
                     className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 hover:bg-slate-100"
                   >
-                    View / Download
+                    {copy.download}
                   </button>
                 </li>
               ))}

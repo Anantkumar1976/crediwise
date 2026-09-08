@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { signOutAction } from "@/app/dashboard/actions";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { useI18n } from "@/components/i18n/locale-provider";
 
 interface DashboardShellProps {
   userEmail: string | null;
@@ -14,43 +16,44 @@ interface DashboardShellProps {
 const NAV = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    key: "dashboard" as const,
     icon: IconHome,
     match: (path: string) => path === "/dashboard" || path === "/dashboard/",
   },
   {
     href: "/dashboard/loans",
-    label: "My Loans",
+    key: "loans" as const,
     icon: IconLoans,
     match: (path: string) => path.startsWith("/dashboard/loans"),
   },
   {
     href: "/dashboard/applications",
-    label: "My Applications",
+    key: "applications" as const,
     icon: IconApplications,
     match: (path: string) => path.startsWith("/dashboard/applications"),
   },
   {
     href: "/dashboard/documents",
-    label: "My Documents",
+    key: "documents" as const,
     icon: IconDocuments,
     match: (path: string) => path.startsWith("/dashboard/documents"),
   },
   {
     href: "/dashboard/advisory",
-    label: "Advisory",
+    key: "advisory" as const,
     icon: IconAdvisory,
     match: (path: string) => path.startsWith("/dashboard/advisory"),
   },
   {
     href: "/dashboard/profile",
-    label: "My Profile",
+    key: "profile" as const,
     icon: IconProfile,
     match: (path: string) => path.startsWith("/dashboard/profile"),
   },
 ] as const;
 
 export function DashboardShell({ userEmail, isStaff, children }: DashboardShellProps) {
+  const { t } = useI18n();
   const pathname = usePathname() ?? "";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -75,7 +78,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
       {sidebarOpen ? (
         <button
           type="button"
-          aria-label="Close sidebar"
+          aria-label={t.dashboard.nav.closeSidebar}
           className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
           onClick={closeSidebar}
         />
@@ -93,13 +96,14 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
             CrediWise
           </Link>
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Customer navigation">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label={t.dashboard.nav.customerNav}>
           {NAV.map((item) => {
             const active = item.match(pathname);
             const Icon = item.icon;
+            const label = t.dashboard.nav[item.key];
             return (
               <Link
-                key={item.href + item.label}
+                key={item.href}
                 href={item.href}
                 onClick={closeSidebar}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
@@ -109,7 +113,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
                 }`}
               >
                 <Icon className="h-5 w-5 shrink-0 text-slate-500" active={active} />
-                {item.label}
+                {label}
               </Link>
             );
           })}
@@ -121,7 +125,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-sky-800 hover:bg-sky-50"
             >
               <IconAdmin className="h-5 w-5" />
-              Admin panel
+              {t.dashboard.nav.adminPanel}
             </Link>
           </div>
         ) : null}
@@ -137,7 +141,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
             aria-controls="dashboard-sidebar"
             onClick={() => setSidebarOpen((v) => !v)}
           >
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">{t.dashboard.nav.toggleMenu}</span>
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -145,7 +149,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
 
           <div className="hidden min-w-0 flex-1 md:block">
             <label className="sr-only" htmlFor="dashboard-search">
-              Search
+              {t.dashboard.nav.search}
             </label>
             <div className="relative max-w-md">
               <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
@@ -161,7 +165,7 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
               <input
                 id="dashboard-search"
                 type="search"
-                placeholder="Search (coming soon)"
+                placeholder={t.dashboard.nav.searchPlaceholder}
                 disabled
                 className="h-10 w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-500"
               />
@@ -169,18 +173,19 @@ export function DashboardShell({ userEmail, isStaff, children }: DashboardShellP
           </div>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <span
               className="hidden max-w-[140px] truncate text-right text-sm text-slate-600 sm:block"
               title={userEmail ?? undefined}
             >
-              {userEmail ?? "Account"}
+              {userEmail ?? t.dashboard.nav.account}
             </span>
             <form action={signOutAction}>
               <button
                 type="submit"
                 className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50 sm:text-sm"
               >
-                Sign out
+                {t.dashboard.nav.signOut}
               </button>
             </form>
           </div>

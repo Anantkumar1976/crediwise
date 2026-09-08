@@ -3,9 +3,17 @@ import {
   isCustomerProfileComplete,
   missingCustomerProfileItems,
 } from "@/lib/profile/completion";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { formatMessage } from "@/lib/i18n/format";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { missingFieldLabels } from "@/lib/i18n/labels";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function DashboardHomePage() {
+  const locale = await getRequestLocale();
+  const t = getDictionary(locale);
+  const d = t.dashboard;
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -59,30 +67,30 @@ export default async function DashboardHomePage() {
 
   const cards = [
     {
-      label: "Applications",
+      label: d.home.applications,
       value: totalApps,
-      sub: `${drafts} draft${drafts !== 1 ? "s" : ""}`,
+      sub: formatMessage(drafts === 1 ? d.home.draftOne : d.home.draftMany, { n: drafts }),
       href: "/dashboard/applications",
       accent: "border-l-sky-500",
     },
     {
-      label: "In progress",
+      label: d.home.inProgress,
       value: inProgress,
-      sub: "Submitted → processing",
+      sub: d.home.inProgressSub,
       href: "/dashboard/applications",
       accent: "border-l-amber-500",
     },
     {
-      label: "Active loans",
+      label: d.home.activeLoans,
       value: loans,
-      sub: "Approved or disbursed",
+      sub: d.home.loansSub,
       href: "/dashboard/loans",
       accent: "border-l-emerald-500",
     },
     {
-      label: "Documents",
+      label: d.home.documents,
       value: safeDocCount,
-      sub: "Files uploaded",
+      sub: d.home.documentsSub,
       href: "/dashboard/documents",
       accent: "border-l-violet-500",
     },
@@ -95,24 +103,24 @@ export default async function DashboardHomePage() {
           className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-950"
           role="alert"
         >
-          <p className="font-semibold">Complete your profile to apply for a loan</p>
+          <p className="font-semibold">{d.home.profileAlertTitle}</p>
           <p className="mt-1 text-amber-900">
-            Missing: {missingProfile.join(", ")}.
+            {formatMessage(d.home.profileAlertMissing, {
+              items: missingFieldLabels(t, missingProfile),
+            })}
           </p>
           <Link
             href="/dashboard/profile"
             className="mt-3 inline-flex font-semibold text-amber-950 underline underline-offset-2 hover:text-amber-900"
           >
-            Go to My Profile →
+            {d.home.profileAlertCta}
           </Link>
         </div>
       ) : null}
 
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Overview of your applications, loans, and requests.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{d.home.title}</h1>
+        <p className="mt-1 text-sm text-slate-600">{d.home.subtitle}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -131,14 +139,14 @@ export default async function DashboardHomePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Quick actions</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{d.home.quickActions}</h2>
           <ul className="mt-4 space-y-2">
             <li>
               <Link
                 href="/dashboard/applications"
                 className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-100"
               >
-                Start or continue an application
+                {d.home.startApplication}
                 <span aria-hidden>→</span>
               </Link>
             </li>
@@ -147,7 +155,7 @@ export default async function DashboardHomePage() {
                 href="/dashboard/documents"
                 className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-100"
               >
-                View all uploaded documents
+                {d.home.viewDocuments}
                 <span aria-hidden>→</span>
               </Link>
             </li>
@@ -156,10 +164,10 @@ export default async function DashboardHomePage() {
                 href="/dashboard/advisory"
                 className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-100"
               >
-                Advisory support
+                {d.home.advisorySupport}
                 {advisoryOpen ? (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
-                    {advisoryOpen} open
+                    {formatMessage(d.home.openCount, { n: advisoryOpen })}
                   </span>
                 ) : (
                   <span aria-hidden>→</span>
@@ -171,7 +179,7 @@ export default async function DashboardHomePage() {
                 href="/dashboard/profile"
                 className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 hover:bg-slate-100"
               >
-                Account &amp; profile
+                {d.home.accountProfile}
                 <span aria-hidden>→</span>
               </Link>
             </li>
@@ -179,15 +187,13 @@ export default async function DashboardHomePage() {
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white shadow-sm">
-          <h2 className="text-lg font-semibold">Need help?</h2>
-          <p className="mt-2 text-sm text-slate-300">
-            Send a message to our team — we’ll reply in your advisory thread.
-          </p>
+          <h2 className="text-lg font-semibold">{d.home.needHelp}</h2>
+          <p className="mt-2 text-sm text-slate-300">{d.home.needHelpBody}</p>
           <Link
             href="/dashboard/advisory"
             className="mt-6 inline-flex rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100"
           >
-            Open advisory
+            {d.home.openAdvisory}
           </Link>
         </section>
       </div>
