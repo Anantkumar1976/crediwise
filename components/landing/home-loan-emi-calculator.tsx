@@ -76,9 +76,9 @@ export function HomeLoanEmiCalculator() {
   const tenureId = useId();
   const rateId = useId();
 
-  const [amount, setAmount] = useState(HOME_LOAN_EMI.defaultAmount);
-  const [years, setYears] = useState(HOME_LOAN_EMI.defaultYears);
-  const [marketRate, setMarketRate] = useState(HOME_LOAN_EMI.defaultRate);
+  const [amount, setAmount] = useState<number>(HOME_LOAN_EMI.defaultAmount);
+  const [years, setYears] = useState<number>(HOME_LOAN_EMI.defaultYears);
+  const [marketRate, setMarketRate] = useState<number>(HOME_LOAN_EMI.defaultRate);
 
   const months = years * 12;
   const market = useMemo(
