@@ -2,6 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "@/components/landing/brand-logo";
 import { ContactForm } from "@/components/landing/contact-form";
+import { GoldCoinOffer } from "@/components/landing/gold-coin-offer";
+import { HomeLoanEmiCalculator } from "@/components/landing/home-loan-emi-calculator";
+import { PartnerBanks } from "@/components/landing/partner-banks";
+import { SavingsRepaymentBanner } from "@/components/landing/savings-repayment-banner";
 import { formatMessage } from "@/lib/i18n/format";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -99,6 +103,8 @@ function ServiceIcon({ name }: { name: (typeof services)[number]["icon"] }) {
 export function HomeContent({ t }: { t: Dictionary }) {
   return (
     <>
+      <HomeLoanEmiCalculator />
+
       <div className="mx-auto max-w-6xl overflow-x-clip px-4 sm:px-6 lg:px-10">
         <section id="services" className="scroll-mt-24 py-16 sm:py-20" aria-labelledby="services-heading">
           <h2
@@ -134,7 +140,11 @@ export function HomeContent({ t }: { t: Dictionary }) {
             })}
           </div>
         </section>
+      </div>
 
+      <GoldCoinOffer t={t} />
+
+      <div className="mx-auto max-w-6xl overflow-x-clip px-4 sm:px-6 lg:px-10">
         <section
           id="how-it-works"
           className="scroll-mt-24 py-16 sm:py-20"
@@ -234,6 +244,8 @@ export function HomeContent({ t }: { t: Dictionary }) {
         </section>
       </div>
 
+      <PartnerBanks t={t} />
+
       <section
         className="bg-[#F3F7FA] py-16 sm:py-20"
         aria-labelledby="testimonial-heading"
@@ -281,74 +293,11 @@ export function HomeContent({ t }: { t: Dictionary }) {
         </div>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-10" aria-labelledby="cta-heading">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl bg-[#F3FAFC] md:hidden">
-          <div className="relative aspect-[16/10] w-full">
-            <Image
-              src="/images/crediwise/crediwise-cta-sunrise.png"
-              alt={t.cta.photoAlt}
-              fill
-              sizes="100vw"
-              className="object-cover object-[72%_center]"
-            />
-          </div>
-          <div className="px-6 py-8">
-            <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">{t.cta.eyebrow}</p>
-            <h2
-              id="cta-heading"
-              className="mt-3 text-[1.75rem] font-bold leading-tight tracking-tight text-[#0A2540]"
-            >
-              {t.cta.heading}
-            </h2>
-            <p className="mt-3 text-base leading-relaxed text-[#3D4F63]">
-              {t.cta.body}
-            </p>
-            <Link
-              href="/auth/sign-up"
-              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-8 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-            >
-              {t.cta.button}
-            </Link>
-          </div>
-        </div>
-
-        <div className="relative mx-auto hidden min-h-[22rem] max-w-6xl overflow-hidden rounded-3xl md:block">
-          <Image
-            src="/images/crediwise/crediwise-cta-sunrise.png"
-            alt={t.cta.photoAlt}
-            fill
-            sizes="(max-width: 1440px) 100vw, 1152px"
-            className="object-cover object-[70%_center]"
-          />
-          <div
-            className="pointer-events-none absolute inset-y-0 left-0 w-[58%] bg-gradient-to-r from-white/95 from-[8%] via-[#F3FAFC]/75 via-[46%] to-transparent"
-            aria-hidden
-          />
-          <div className="relative z-10 flex w-[42%] min-w-[17rem] max-w-[45%] items-center px-8 py-14 lg:px-12 lg:py-16">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.18em] text-[#00A88E]">{t.cta.eyebrow}</p>
-              <h2 className="mt-3 text-[2.25rem] font-bold leading-[1.2] tracking-tight text-[#0A2540] lg:text-[2.75rem]">
-                {t.cta.headingLine1}
-                <br />
-                {t.cta.headingLine2}
-              </h2>
-              <p className="mt-4 max-w-[26rem] text-base leading-relaxed text-[#3D4F63]">
-                {t.cta.body}
-              </p>
-              <Link
-                href="/auth/sign-up"
-                className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#00A88E] px-8 text-sm font-semibold text-white transition hover:bg-[#00957D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00A88E]"
-              >
-                {t.cta.button}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <SavingsRepaymentBanner t={t} />
 
       <section
         id="contact"
-        className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 sm:px-6 lg:px-10"
+        className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:px-10"
         aria-labelledby="contact-heading"
       >
         <h2 id="contact-heading" className="text-3xl font-bold tracking-tight text-[#0A2540] sm:text-4xl">

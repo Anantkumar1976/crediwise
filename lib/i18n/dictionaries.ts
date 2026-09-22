@@ -57,6 +57,54 @@ export interface Dictionary {
       }
     >;
   };
+  emiCalculator: {
+    eyebrow: string;
+    heading: string;
+    subheading: string;
+    amountLabel: string;
+    tenureLabel: string;
+    rateLabel: string;
+    amountMin: string;
+    amountMax: string;
+    yearsSuffix: string;
+    yearSuffix: string;
+    rateSuffix: string;
+    marketTitle: string;
+    monthlyEmi: string;
+    totalInterest: string;
+    totalPayable: string;
+    crediwiseTitle: string;
+    youSave: string;
+    savePercent: string;
+    compareCta: string;
+    disclaimer: string;
+    liveSummary: string;
+  };
+  savingsBanner: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    cta: string;
+  };
+  goldOffer: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    cta: string;
+    disclaimer: string;
+  };
+  partnerBanks: {
+    eyebrow: string;
+    heading: string;
+    subheading: string;
+    names: {
+      hdfc: string;
+      icici: string;
+      sbi: string;
+      axis: string;
+      kotak: string;
+    };
+  };
   services: {
     heading: string;
     subheading: string;
@@ -216,6 +264,58 @@ export const en: Dictionary = {
         ctaLabel: "Explore Personal Loans",
         ctaAriaLabel: "Explore personal loans and create an account",
       },
+    },
+  },
+  emiCalculator: {
+    eyebrow: "PLAN YOUR HOME LOAN",
+    heading: "Home Loan EMI Calculator",
+    subheading:
+      "See your monthly EMI, interest, and total payable at market rates — then how much CrediWise can save you.",
+    amountLabel: "Loan amount",
+    tenureLabel: "Tenure",
+    rateLabel: "Market interest rate",
+    amountMin: "₹5 Lakh",
+    amountMax: "₹5 Crore",
+    yearsSuffix: "Years",
+    yearSuffix: "Year",
+    rateSuffix: "% p.a.",
+    marketTitle: "MARKET STANDARD",
+    monthlyEmi: "Monthly EMI",
+    totalInterest: "Total interest",
+    totalPayable: "Total payable",
+    crediwiseTitle: "WITH CREDIWISE",
+    youSave: "Interest you can save",
+    savePercent: "Save 50% on interest",
+    compareCta: "Apply with CrediWise",
+    disclaimer:
+      "For representation purpose only. Final EMI, interest, and eligibility depend on the lender’s policy. CrediWise helps restructure your home loan so you can save about 50% of the interest payable.",
+    liveSummary:
+      "Monthly EMI {emi}. Total interest {interest}. With CrediWise you could save {saved}.",
+  },
+  savingsBanner: {
+    eyebrow: "YOUR ADVANTAGE",
+    heading: "Save 50% on your Loan Repayment!",
+    body: "Compare offers from top banks and move to a lower-interest plan. Most home-loan borrowers can cut their interest outgo by nearly half with CrediWise.",
+    cta: "Start saving now",
+  },
+  goldOffer: {
+    eyebrow: "LATEST OFFER",
+    heading: "Get a 1 gm Gold Coin*",
+    body: "On every Home Loan application of ₹1 Crore.",
+    cta: "Claim this offer",
+    disclaimer:
+      "*The gold coin will be handed over once the loan is disbursed. Offer is subject to eligibility and lender confirmation.",
+  },
+  partnerBanks: {
+    eyebrow: "LENDING PARTNERS",
+    heading: "Our Partner Banks",
+    subheading: "Compare home loan offers from India’s leading lenders.",
+    names: {
+      hdfc: "HDFC Bank",
+      icici: "ICICI Bank",
+      sbi: "State Bank of India",
+      axis: "Axis Bank",
+      kotak: "Kotak Mahindra Bank",
     },
   },
   services: {
@@ -425,6 +525,58 @@ export const hi: Dictionary = {
       },
     },
   },
+  emiCalculator: {
+    eyebrow: "अपना होम लोन प्लान करें",
+    heading: "होम लोन EMI कैलकुलेटर",
+    subheading:
+      "बाज़ार दर पर मासिक EMI, कुल ब्याज और कुल देय राशि देखें — फिर जानें क्रेडीवाइज़ से कितनी बचत हो सकती है।",
+    amountLabel: "लोन राशि",
+    tenureLabel: "अवधि",
+    rateLabel: "बाज़ार ब्याज दर",
+    amountMin: "₹5 लाख",
+    amountMax: "₹5 करोड़",
+    yearsSuffix: "वर्ष",
+    yearSuffix: "वर्ष",
+    rateSuffix: "% प्रति वर्ष",
+    marketTitle: "बाज़ार मानक",
+    monthlyEmi: "मासिक EMI",
+    totalInterest: "कुल ब्याज",
+    totalPayable: "कुल देय",
+    crediwiseTitle: "क्रेडीवाइज़ के साथ",
+    youSave: "ब्याज की बचत",
+    savePercent: "ब्याज पर 50% बचत",
+    compareCta: "क्रेडीवाइज़ से आवेदन करें",
+    disclaimer:
+      "केवल दर्शाए गए उद्देश्य के लिए। अंतिम EMI, ब्याज और पात्रता ऋणदाता की नीति पर निर्भर है। क्रेडीवाइज़ होम लोन को पुनर्गठित करने में मदद करता है, जिससे देय ब्याज पर लगभग 50% बचत हो सकती है।",
+    liveSummary:
+      "मासिक EMI {emi}। कुल ब्याज {interest}। क्रेडीवाइज़ से लगभग {saved} बचा सकते हैं।",
+  },
+  savingsBanner: {
+    eyebrow: "आपका फ़ायदा",
+    heading: "अपने लोन रीपेमेंट पर 50% बचाएँ!",
+    body: "शीर्ष बैंकों के ऑफ़र तुलना करें और कम ब्याज वाली योजना पर जाएँ। क्रेडीवाइज़ के साथ होम लोन पर ब्याज का बोझ लगभग आधा हो सकता है।",
+    cta: "अभी बचत शुरू करें",
+  },
+  goldOffer: {
+    eyebrow: "नवीनतम ऑफ़र",
+    heading: "1 ग्राम गोल्ड कॉइन पाएँ*",
+    body: "1 करोड़ रुपये के होम लोन आवेदन पर।",
+    cta: "यह ऑफ़र पाएँ",
+    disclaimer:
+      "*गोल्ड कॉइन लोन वितरित होने के बाद दिया जाएगा। ऑफ़र पात्रता और ऋणदाता की पुष्टि पर निर्भर है।",
+  },
+  partnerBanks: {
+    eyebrow: "लेंडिंग पार्टनर",
+    heading: "हमारे पार्टनर बैंक",
+    subheading: "भारत के प्रमुख बैंकों से होम लोन ऑफ़र तुलना करें।",
+    names: {
+      hdfc: "एचडीएफसी बैंक",
+      icici: "आईसीआईसीआई बैंक",
+      sbi: "भारतीय स्टेट बैंक",
+      axis: "एक्सिस बैंक",
+      kotak: "कोटक महिंद्रा बैंक",
+    },
+  },
   services: {
     heading: "हर लक्ष्य के लिए लोन विकल्प",
     subheading: "घर, वाहन, व्यक्तिगत और व्यापारिक ज़रूरतों के लिए तैयार विकल्प।",
@@ -629,6 +781,58 @@ export const mr: Dictionary = {
         ctaLabel: "पर्सनल लोन पहा",
         ctaAriaLabel: "पर्सनल लोन पहा आणि खाते तयार करा",
       },
+    },
+  },
+  emiCalculator: {
+    eyebrow: "तुमचे होम लोन प्लॅन करा",
+    heading: "होम लोन EMI कॅलक्युलेटर",
+    subheading:
+      "बाजार दरानुसार मासिक EMI, एकूण व्याज आणि एकूण देय रक्कम पाहा — नंतर क्रेडीवाइजमुळे किती बचत होऊ शकते ते पाहा.",
+    amountLabel: "लोन रक्कम",
+    tenureLabel: "कालावधी",
+    rateLabel: "बाजार व्याज दर",
+    amountMin: "₹5 लाख",
+    amountMax: "₹5 कोटी",
+    yearsSuffix: "वर्षे",
+    yearSuffix: "वर्ष",
+    rateSuffix: "% प्रति वर्ष",
+    marketTitle: "बाजार मानक",
+    monthlyEmi: "मासिक EMI",
+    totalInterest: "एकूण व्याज",
+    totalPayable: "एकूण देय",
+    crediwiseTitle: "क्रेडीवाइजसोबत",
+    youSave: "व्याजाची बचत",
+    savePercent: "व्याजावर 50% बचत",
+    compareCta: "क्रेडीवाइजद्वारे अर्ज करा",
+    disclaimer:
+      "केवळ दर्शनासाठी. अंतिम EMI, व्याज आणि पात्रता ऋणदात्याच्या धोरणावर अवलंबून आहे. क्रेडीवाइज होम लोन पुनर्रचित करण्यात मदत करते, ज्यामुळे देय व्याजावर सुमारे 50% बचत होऊ शकते.",
+    liveSummary:
+      "मासिक EMI {emi}. एकूण व्याज {interest}. क्रेडीवाइजमुळे सुमारे {saved} वाचू शकतात.",
+  },
+  savingsBanner: {
+    eyebrow: "तुमचा फायदा",
+    heading: "तुमच्या लोन परतफेडीवर 50% बचत करा!",
+    body: "आघाडीच्या बँकांच्या ऑफरची तुलना करा आणि कमी व्याजाच्या योजनेकडे जा. क्रेडीवाइजमुळे होम लोनावरील व्याजाचा बोजा जवळजवळ निम्मा होऊ शकतो.",
+    cta: "आता बचत सुरू करा",
+  },
+  goldOffer: {
+    eyebrow: "नवीनतम ऑफर",
+    heading: "1 ग्रॅम गोल्ड कॉइन मिळवा*",
+    body: "1 कोटी रुपयांच्या होम लोन अर्जावर.",
+    cta: "ही ऑफर मिळवा",
+    disclaimer:
+      "*गोल्ड कॉइन लोन वितरित झाल्यानंतर दिले जाईल. ऑफर पात्रता आणि ऋणदात्याच्या पुष्टीवर अवलंबून आहे.",
+  },
+  partnerBanks: {
+    eyebrow: "लेंडिंग पार्टनर",
+    heading: "आमचे पार्टनर बँक",
+    subheading: "भारतातील आघाडीच्या बँकांच्या होम लोन ऑफरची तुलना करा.",
+    names: {
+      hdfc: "एचडीएफसी बँक",
+      icici: "आयसीआयसीआय बँक",
+      sbi: "स्टेट बँक ऑफ इंडिया",
+      axis: "अॅक्सिस बँक",
+      kotak: "कोटक महिंद्रा बँक",
     },
   },
   services: {
